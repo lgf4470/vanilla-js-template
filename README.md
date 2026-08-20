@@ -81,7 +81,7 @@ public/                   公开静态资源
 | `npm run build:budget` | 校验首屏和模块懒加载文件 gzip 预算 |
 | `npm run db:migrate` | 执行数据库迁移 |
 | `npm run db:reset` | 重建本地数据库 |
-| `npm run db:seed` | 写入演示数据 |
+| `npm run db:seed` | 写入演示数据（settings:profile / account / notifications，写入 `ws-default` 工作空间；`settings:profile` 为敏感键，整值经 AES-GCM 加密后落库） |
 
 ## 环境变量
 
