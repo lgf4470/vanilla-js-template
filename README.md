@@ -121,4 +121,4 @@ public/                   公开静态资源
 
 ## 语言与模块约定
 
-业务模块放在 `app/modules/<id>/`，模块清单由 `app/modules/registry.js` 登记，根视图、样式和语言包按需加载。新增或调整文案后运行 `npm run i18n:check`；新增数据库查询必须参数化并遵循 `server/db/query/` 约定。
+业务模块放在 `app/modules/<id>/`，模块清单由 `app/modules/registry.js` 登记，根视图、样式和语言包按需加载。新增或调整文案后运行 `npm run i18n:check`；新增数据库查询必须参数化并遵循 `server/db/schema.js`（唯一建表来源，`CREATE TABLE IF NOT EXISTS` 幂等）与适配器参数绑定约定。
