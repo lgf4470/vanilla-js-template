@@ -2,14 +2,27 @@ name: CI
 
 on:
   push:
-    branches: [main]
-  pull_request:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref to verify
+        required: true
+        default: main
+        type: string
+
+permissions:
+  contents: read
 
 jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
 
       - name: Setup Node 22
         uses: actions/setup-node@v4
