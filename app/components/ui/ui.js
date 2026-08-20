@@ -29,7 +29,7 @@
   var BUTTON_SIZES = {
     default:
       'h-8 gap-1.5 rounded-lg px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2',
-    sm: 'h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*="size-"])]:size-3.5',
+    sm: 'h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem]! in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*="size-"])]:size-3.5',
     lg: 'h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2',
     icon: 'size-8',
     'icon-sm': 'size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg',
@@ -268,7 +268,7 @@
       '">' +
       t('placeholder.wip') +
       '</span>' +
-      '<a href="#/" data-link="/" class="mt-2"><button type="button" class="' +
+      '<a href="#/" data-link="/" class="mt-2"><button type="button" data-slot="button" class="' +
       buttonClass('outline') +
       '">' +
       App.icon.iconSvg('arrow-left', { class: 'size-4' }) +
@@ -295,7 +295,7 @@
       '<p class="max-w-md text-sm text-muted-foreground">' +
       t('notFound.desc') +
       '</p>' +
-      '<a href="#/" data-link="/" class="mt-2"><button type="button" class="' +
+      '<a href="#/" data-link="/" class="mt-2"><button type="button" data-slot="button" class="' +
       buttonClass('outline') +
       '">' +
       t('placeholder.back') +

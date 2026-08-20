@@ -182,12 +182,12 @@
       '</div>' +
       '</div>' +
       '<div class="mt-6 flex justify-end gap-2">' +
-      '<button type="button" data-ws-cancel class="' +
+      '<button type="button" data-ws-cancel data-slot="button" class="' +
       App.ui.buttonClass('outline') +
       '">' +
       tt('workspace.cancel') +
       '</button>' +
-      '<button type="button" data-ws-submit class="' +
+      '<button type="button" data-ws-submit data-slot="button" class="' +
       App.ui.buttonClass('default') +
       '">' +
       tt(isEdit ? 'workspace.save' : 'workspace.create') +
@@ -209,12 +209,12 @@
       tt('workspace.deleteDesc') +
       '</p>' +
       '<div class="mt-6 flex justify-end gap-2">' +
-      '<button type="button" data-ws-cancel-delete class="' +
+      '<button type="button" data-ws-cancel-delete data-slot="button" class="' +
       App.ui.buttonClass('outline') +
       '">' +
       tt('workspace.cancel') +
       '</button>' +
-      '<button type="button" data-ws-confirm-delete class="' +
+      '<button type="button" data-ws-confirm-delete data-slot="button" class="' +
       App.ui.buttonClass('destructive') +
       '">' +
       tt('workspace.deleteConfirm') +

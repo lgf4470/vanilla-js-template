@@ -264,7 +264,7 @@
       '<ul data-slot="sidebar-menu" data-sidebar="menu" class="flex w-full min-w-0 flex-col gap-0">' +
       '<li data-slot="sidebar-menu-item" data-sidebar="menu-item" class="group/menu-item relative">' +
       '<div class="relative" data-dropdown>' +
-      '<button type="button" data-dropdown-trigger class="' +
+      '<button type="button" data-dropdown-trigger data-slot="button" class="' +
       ui().buttonClass(
         'ghost',
         'lg',
@@ -317,7 +317,7 @@
       '<ul data-slot="sidebar-menu" data-sidebar="menu" class="flex w-full min-w-0 flex-col gap-0">' +
       '<li data-slot="sidebar-menu-item" data-sidebar="menu-item" class="group/menu-item relative">' +
       '<div class="relative" data-dropdown>' +
-      '<button type="button" data-dropdown-trigger class="' +
+      '<button type="button" data-dropdown-trigger data-slot="button" class="' +
       ui().buttonClass(
         'ghost',
         'lg',
@@ -392,7 +392,7 @@
     ];
     var langMenu =
       '<div class="relative" data-dropdown>' +
-      '<button type="button" data-dropdown-trigger class="' +
+      '<button type="button" data-dropdown-trigger data-slot="button" class="' +
       ui().buttonClass('ghost', 'icon-sm', 'size-7') +
       '" aria-label="' +
       t('header.language') +
@@ -437,7 +437,7 @@
 
     return (
       '<header class="relative isolate z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 px-3">' +
-      '<button type="button" data-sidebar-trigger data-slot="sidebar-trigger" class="' +
+      '<button type="button" data-sidebar-trigger data-slot="button" class="' +
       ui().buttonClass('ghost', 'icon-sm', 'size-7') +
       '" aria-label="Toggle Sidebar" data-tip="Toggle Sidebar">' +
       icon().iconSvg('panel-left', { class: 'size-4' }) +
@@ -447,7 +447,7 @@
       '<div class="ms-auto flex items-center gap-1.5">' +
       langMenu +
       themeGroup +
-      '<button type="button" data-sheet-trigger class="' +
+      '<button type="button" data-sheet-trigger data-slot="button" class="' +
       ui().buttonClass('ghost', 'icon-sm', 'size-7') +
       '" aria-label="' +
       t('settings.title') +
@@ -456,7 +456,7 @@
       '">' +
       icon().iconSvg('palette', { class: 'size-4' }) +
       '</button>' +
-      '<button type="button" data-signout class="' +
+      '<button type="button" data-signout data-slot="button" class="' +
       ui().buttonClass('ghost', 'icon-sm', 'size-7') +
       '" data-tip="' +
       t('sidebar.signOut') +
@@ -508,7 +508,7 @@
       '<p class="text-sm text-muted-foreground">' +
       t('settings.description') +
       '</p>' +
-      '<button type="button" data-sheet-close class="absolute top-3 right-3 ' +
+      '<button type="button" data-sheet-close data-slot="button" class="absolute top-3 right-3 ' +
       ui().buttonClass('ghost', 'icon-sm', 'size-7 rounded-lg') +
       '" aria-label="' +
       t('settings.close') +
@@ -662,7 +662,7 @@
       radio.readonlyRow(t('settings.menuAccent'), t('settings.subtle')) +
       '</div></div>' +
       '<div class="border-t p-4">' +
-      '<button type="button" data-reset-settings class="w-full ' +
+      '<button type="button" data-reset-settings data-slot="button" class="w-full ' +
       ui().buttonClass('destructive') +
       '">' +
       icon().iconSvg('rotate-ccw', { class: 'size-4' }) +

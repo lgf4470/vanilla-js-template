@@ -188,12 +188,12 @@
       '<p data-pf-error class="pf-error"></p>' +
       '</div>' +
       '<div class="mt-6 flex justify-end gap-2">' +
-      '<button type="button" data-pf-cancel class="' +
+      '<button type="button" data-pf-cancel data-slot="button" class="' +
       App.ui.buttonClass('outline') +
       '">' +
       tt('profiles.cancel') +
       '</button>' +
-      '<button type="button" data-pf-submit class="' +
+      '<button type="button" data-pf-submit data-slot="button" class="' +
       App.ui.buttonClass('default') +
       '">' +
       tt(isRename ? 'profiles.save' : 'profiles.create') +
@@ -215,12 +215,12 @@
       tt('profiles.deleteDesc') +
       '</p>' +
       '<div class="mt-6 flex justify-end gap-2">' +
-      '<button type="button" data-pf-cancel-delete class="' +
+      '<button type="button" data-pf-cancel-delete data-slot="button" class="' +
       App.ui.buttonClass('outline') +
       '">' +
       tt('profiles.cancel') +
       '</button>' +
-      '<button type="button" data-pf-confirm-delete class="' +
+      '<button type="button" data-pf-confirm-delete data-slot="button" class="' +
       App.ui.buttonClass('destructive') +
       '">' +
       tt('profiles.delete') +

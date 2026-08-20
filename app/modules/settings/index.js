@@ -143,7 +143,7 @@
           '</p>' +
           '<div class="sp-avatar-upload">' +
           '<input type="file" data-avatar-file accept="image/*" style="display:none" />' +
-          '<button type="button" data-avatar-upload class="' +
+          '<button type="button" data-avatar-upload data-slot="button" class="' +
           App.ui.buttonClass('outline', 'sm') +
           '">' +
           icon().iconSvg('image-plus', { class: 'size-4' }) +
@@ -224,13 +224,13 @@
       '<input class="' + App.ui.inputClass() + '" type="url" data-setting="profile.links.1" value="' +
       escAttr(links[1]) +
       '" />' +
-      '<button type="button" class="' +
+      '<button type="button" data-slot="button" class="' +
       App.ui.buttonClass('outline', 'sm') +
       '">' +
       t('profile.urls.add') +
       '</button>' +
       '</div>' +
-      '<button type="button" class="' +
+      '<button type="button" data-slot="button" class="' +
       App.ui.buttonClass('default') +
       '">' +
       t('profile.submit') +
@@ -481,7 +481,7 @@
       t('account.language.description') +
       '</p>' +
       '</div>' +
-      '<button type="button" class="' +
+      '<button type="button" data-slot="button" class="' +
       App.ui.buttonClass('default') +
       '">' +
       t('account.submit') +
@@ -657,7 +657,7 @@
         )
       ) +
       radio.readonlyRow(t('settings.menuAccent'), t('settings.subtle')) +
-      '<button type="button" data-reset-appearance class="' +
+      '<button type="button" data-reset-appearance data-slot="button" class="' +
       App.ui.buttonClass('destructive') +
       '">' +
       t('appearance.reset') +
@@ -767,7 +767,7 @@
       t('notifications.mobile.descriptionAfter') +
       '</p>' +
       '</div></label>' +
-      '<button type="button" class="' +
+      '<button type="button" data-slot="button" class="' +
       App.ui.buttonClass('default') +
       '">' +
       t('notifications.submit') +

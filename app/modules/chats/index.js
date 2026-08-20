@@ -543,7 +543,7 @@
           desc: t('chats.emptyDesc'),
           fill: true,
           actionHtml:
-            '<button type="button" class="' +
+            '<button type="button" data-slot="button" class="' +
             App.ui.buttonClass('default') +
             '" data-ch-new>' +
             t('chats.sendMessage') +

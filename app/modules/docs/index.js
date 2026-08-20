@@ -25,7 +25,7 @@
       first +
       '" data-link="' +
       first +
-      '" class="' +
+      '" data-slot="button" class="' +
       App.ui.buttonClass('default') +
       '">' +
       t('placeholder.back') +

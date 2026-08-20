@@ -558,7 +558,7 @@
       '<h1 class="font-heading text-2xl font-bold tracking-tight">' +
       t('dashboard.title') +
       '</h1>' +
-      '<button type="button" data-db-download class="' +
+      '<button type="button" data-db-download data-slot="button" class="' +
       App.ui.buttonClass('default') +
       '">' +
       t('dashboard.download') +

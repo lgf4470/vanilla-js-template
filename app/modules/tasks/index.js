@@ -249,7 +249,7 @@
     var arrow = s.key === key ? (s.dir === 'asc' ? 'arrow-up' : 'arrow-down') : 'chevrons-up-down';
     return (
       '<div class="relative" data-dropdown>' +
-      '<button type="button" data-dropdown-trigger data-task-sort="' +
+      '<button type="button" data-dropdown-trigger data-slot="button" data-task-sort="' +
       key +
       '" class="' +
       App.ui.buttonClass('ghost', 'sm', 'h-8 px-2 font-semibold!') +
@@ -316,7 +316,7 @@
     }
     return (
       '<div class="relative" data-dropdown>' +
-      '<button type="button" data-dropdown-trigger data-task-filter="' +
+      '<button type="button" data-dropdown-trigger data-slot="button" data-task-filter="' +
       kind +
       '" class="' +
       App.ui.buttonClass('outline', 'sm', 'h-8 border-dashed') +
@@ -392,7 +392,7 @@
     ];
     return (
       '<div class="relative" data-dropdown>' +
-      '<button type="button" data-dropdown-trigger data-task-view class="' +
+      '<button type="button" data-dropdown-trigger data-task-view data-slot="button" class="' +
       App.ui.buttonClass('outline', 'sm', 'ms-auto hidden h-8 lg:inline-flex') +
       '">' +
       icon().iconSvg('sliders-horizontal', { class: 'size-4' }) +
@@ -451,7 +451,7 @@
       filterBtn(t, 'priority', t('tasks.filter.priority'), PRIORITIES) +
       '</div>' +
       (isFiltered
-        ? '<button type="button" data-task-reset class="' +
+        ? '<button type="button" data-task-reset data-slot="button" class="' +
           App.ui.buttonClass('ghost', 'sm', 'h-8 px-2 lg:px-3') +
           '">' +
           t('tasks.reset') +
@@ -530,7 +530,7 @@
     }).join('');
     return (
       '<div class="relative text-right" data-dropdown>' +
-      '<button type="button" data-dropdown-trigger data-task-row-menu="' +
+      '<button type="button" data-dropdown-trigger data-slot="button" data-task-row-menu="' +
       row.id +
       '" aria-label="' +
       t('tasks.openMenu') +
@@ -684,7 +684,7 @@
       '<div class="tk-pagination">' +
       '<div class="flex items-center gap-2">' +
       '<div class="relative" data-dropdown>' +
-      '<button type="button" data-dropdown-trigger class="' +
+      '<button type="button" data-dropdown-trigger data-slot="button" class="' +
       App.ui.buttonClass('outline', 'sm', 'h-8 w-20') +
       '">' +
       '<span>' +
@@ -782,7 +782,7 @@
     var dd = function (label, iconName, items, action) {
       return (
         '<div class="relative" data-dropdown>' +
-        '<button type="button" data-dropdown-trigger data-tip="' +
+        '<button type="button" data-dropdown-trigger data-slot="button" data-tip="' +
         label +
         '" aria-label="' +
         label +
@@ -819,7 +819,7 @@
     };
     return (
       '<div role="toolbar" class="tk-bulk-bar">' +
-      '<button type="button" data-task-clear-selection class="' +
+      '<button type="button" data-task-clear-selection data-slot="button" class="' +
       App.ui.buttonClass('outline', 'icon', 'size-6 rounded-full!') +
       '" aria-label="' +
       t('tasks.clearSelection') +
@@ -840,7 +840,7 @@
       '<span class="mx-1 h-5 w-px bg-border"></span>' +
       dd(t('tasks.bulkStatus'), 'circle-arrow-up', STATUSES, 'status') +
       dd(t('tasks.bulkPriority'), 'arrow-up-down', PRIORITIES, 'priority') +
-      '<button type="button" data-task-bulk-export class="' +
+      '<button type="button" data-task-bulk-export data-slot="button" class="' +
       App.ui.buttonClass('outline', 'icon', 'size-8 rounded-md!') +
       '" data-tip="' +
       t('tasks.bulkExport') +
@@ -849,7 +849,7 @@
       '">' +
       icon().iconSvg('download', { class: 'size-4' }) +
       '</button>' +
-      '<button type="button" data-task-bulk-delete class="' +
+      '<button type="button" data-task-bulk-delete data-slot="button" class="' +
       App.ui.buttonClass('destructive', 'icon', 'size-8 rounded-md!') +
       '" data-tip="' +
       t('tasks.bulkDelete') +
@@ -888,7 +888,7 @@
       '</p>' +
       '</div>' +
       '<div class="flex gap-2">' +
-      '<button type="button" data-task-open="import" class="' +
+      '<button type="button" data-task-open="import" data-slot="button" class="' +
       App.ui.buttonClass('outline') +
       '">' +
       '<span>' +
@@ -896,7 +896,7 @@
       '</span> ' +
       icon().iconSvg('download', { class: 'size-4' }) +
       '</button>' +
-      '<button type="button" data-task-open="create" class="' +
+      '<button type="button" data-task-open="create" data-slot="button" class="' +
       App.ui.buttonClass('default') +
       '">' +
       '<span>' +
@@ -1031,12 +1031,12 @@
       '</div>' +
       '</div>' +
       '<div class="tk-drawer-footer">' +
-      '<button type="button" data-task-dialog-close class="' +
+      '<button type="button" data-task-dialog-close data-slot="button" class="' +
       App.ui.buttonClass('outline') +
       '">' +
       t('tasks.drawer.close') +
       '</button>' +
-      '<button type="button" data-task-drawer-save class="' +
+      '<button type="button" data-task-drawer-save data-slot="button" class="' +
       App.ui.buttonClass('default') +
       '">' +
       t('tasks.drawer.save') +
@@ -1082,12 +1082,12 @@
           t('tasks.deleteDescAfter') +
           '</p>',
         foot:
-          '<button type="button" data-task-dialog-close class="' +
+          '<button type="button" data-task-dialog-close data-slot="button" class="' +
           App.ui.buttonClass('outline') +
           '">' +
           t('tasks.deleteCancel') +
           '</button>' +
-          '<button type="button" data-task-confirm-delete class="' +
+          '<button type="button" data-task-confirm-delete data-slot="button" class="' +
           App.ui.buttonClass('destructive') +
           '">' +
           t('tasks.deleteConfirm') +
@@ -1127,12 +1127,12 @@
           '</p>' +
           '</div>',
         foot:
-          '<button type="button" data-task-dialog-close class="' +
+          '<button type="button" data-task-dialog-close data-slot="button" class="' +
           App.ui.buttonClass('outline') +
           '">' +
           t('tasks.deleteCancel') +
           '</button>' +
-          '<button type="button" data-task-confirm-bulk-delete class="' +
+          '<button type="button" data-task-confirm-bulk-delete data-slot="button" class="' +
           App.ui.buttonClass('destructive') +
           '"' +
           (bulkDeleteInput !== 'DELETE' ? ' disabled' : '') +
@@ -1158,12 +1158,12 @@
           '</p>' +
           '</div>',
         foot:
-          '<button type="button" data-task-dialog-close class="' +
+          '<button type="button" data-task-dialog-close data-slot="button" class="' +
           App.ui.buttonClass('outline') +
           '">' +
           t('tasks.importClose') +
           '</button>' +
-          '<button type="button" data-task-confirm-import class="' +
+          '<button type="button" data-task-confirm-import data-slot="button" class="' +
           App.ui.buttonClass('default') +
           '">' +
           t('tasks.importConfirm') +
