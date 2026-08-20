@@ -1087,7 +1087,7 @@
       '.gt-field{display:flex;flex-direction:column;gap:.3125rem}' +
       '.gt-field>label{font-size:.75rem;font-weight:500;color:var(--muted-foreground)}' +
       '.gt-input{height:1.875rem;border-radius:.4375rem;border:1px solid var(--border);background:var(--background);color:inherit;padding:0 .5rem;font-size:.8125rem;outline:none}' +
-      '.gt-input:focus{border-color:var(--ring);box-shadow:0 0 0 2px rgba(24,24,27,.1)}' +
+      '.gt-input:focus{border-color:var(--ring);box-shadow:0 0 0 2px color-mix(in oklab,var(--ring) 40%,transparent)}' +
       '.gt-optlist{max-height:12rem;overflow-y:auto;border:1px solid var(--border);border-radius:.4375rem;padding:.25rem}' +
       '.gt-opt{display:flex;align-items:center;gap:.4375rem;padding:.3125rem .5rem;border-radius:.3125rem;font-size:.8125rem;cursor:pointer}' +
       '.gt-opt:hover{background:var(--accent)}' +

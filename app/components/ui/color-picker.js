@@ -628,13 +628,13 @@
       '.cpk-dialog-title{font-size:.8125rem;font-weight:600}' +
       '.cpk{display:flex;flex-direction:column;gap:.5rem;width:15rem;max-width:calc(100vw - 2rem)}' +
       '.cpk-preview{display:flex;align-items:center;gap:.375rem}' +
-      '.cpk-dot{width:1.5rem;height:1.5rem;border-radius:9999px;flex-shrink:0;border:1px solid rgba(128,128,128,.35);box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}' +
+      '.cpk-dot{width:1.5rem;height:1.5rem;border-radius:9999px;flex-shrink:0;border:1px solid var(--border);box-shadow:inset 0 0 0 1px color-mix(in oklab, var(--nova-white) 25%, transparent)}' +
       '.cpk-input{flex:1;min-width:0;height:1.75rem;border-radius:.4375rem;border:1px solid var(--border);background:var(--background);color:inherit;padding:0 .5rem;font-size:.75rem;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;outline:none}' +
-      '.cpk-input:focus{border-color:var(--ring);box-shadow:0 0 0 2px rgba(24,24,27,.12)}' +
+      '.cpk-input:focus{border-color:var(--ring);box-shadow:0 0 0 2px color-mix(in oklab, var(--ring) 40%, transparent)}' +
       '.cpk-icobtn{display:inline-flex;align-items:center;justify-content:center;width:1.75rem;height:1.75rem;border-radius:.4375rem;border:0;background:transparent;color:var(--muted-foreground);cursor:pointer}' +
       '.cpk-icobtn:hover{background:var(--accent);color:inherit}' +
       '.cpk-presets{display:grid;grid-template-columns:repeat(10,1fr);gap:.3125rem}' +
-      '.cpk-swatch{width:100%;aspect-ratio:1;border-radius:9999px;border:0;cursor:pointer;padding:0;outline:1px solid rgba(128,128,128,.25);outline-offset:1px;transition:transform .1s}' +
+      '.cpk-swatch{width:100%;aspect-ratio:1;border-radius:9999px;border:0;cursor:pointer;padding:0;outline:1px solid var(--border);outline-offset:1px;transition:transform .1s}' +
       '.cpk-swatch:hover{transform:scale(1.15);outline-color:var(--ring)}' +
       '.cpk-swatch.is-on{outline:2px solid var(--ring);outline-offset:1px}' +
       '.cpk-pickers{display:flex;flex-direction:column;gap:.5rem}' +
@@ -650,7 +650,7 @@
       '.cpk-btn-primary{background:var(--primary);color:var(--primary-foreground);border-color:transparent}' +
       '.cpk-btn-ghost{border-color:transparent;color:var(--muted-foreground);background:transparent}' +
       '.cpk-btn:hover{opacity:.85}' +
-      '.dark .cpk-dot,.dark .cpk-input{border-color:rgba(128,128,128,.4)}';
+      '.dark .cpk-dot,.dark .cpk-input{border-color:var(--border)}';
     document.head.appendChild(style);
   }
   injectStyles();

@@ -118,7 +118,7 @@
     style.textContent =
       '.ui-tip{position:fixed;z-index:2000;max-width:18rem;padding:.3125rem .5625rem;border-radius:.375rem;' +
       'background:var(--nova-ink);color:var(--nova-white);font-size:.75rem;line-height:1.4;font-weight:500;' +
-      'box-shadow:0 4px 12px rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.08);' +
+      'box-shadow:0 4px 12px rgba(0,0,0,.18);border:1px solid color-mix(in oklab, var(--nova-white) 8%, transparent);' +
       'pointer-events:none;white-space:normal;word-break:break-word}';
     document.head.appendChild(style);
   }
