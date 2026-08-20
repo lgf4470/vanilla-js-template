@@ -4,7 +4,7 @@ const manifest = {
   order: 6,
   i18nNamespace: 'apihub',
   loadRoot: () => import('./index.js'),
-  submodules: [],
+  children: [],
   title: { 'zh-CN': 'API Hub', 'zh-TW': 'API Hub', en: 'API Hub' },
   route: '/apihub',
   load: 'index.js',

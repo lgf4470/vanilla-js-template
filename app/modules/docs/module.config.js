@@ -43,7 +43,6 @@ const manifest = {
   order: 5,
   i18nNamespace: 'docs',
   loadRoot: () => import('./index.js'),
-  submodules: children,
   title: { 'zh-CN': '文档', 'zh-TW': '文件', en: 'Documentation' },
   route: '/docs',
   load: 'index.js',

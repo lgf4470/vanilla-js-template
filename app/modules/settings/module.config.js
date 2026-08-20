@@ -42,7 +42,6 @@ const manifest = {
   order: 7,
   i18nNamespace: 'settings',
   loadRoot: () => import('./index.js'),
-  submodules: children,
   title: { 'zh-CN': '设置', 'zh-TW': '設定', en: 'Settings' },
   route: '/settings',
   load: 'index.js',

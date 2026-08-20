@@ -4,7 +4,7 @@ const manifest = {
   order: 2,
   i18nNamespace: 'tasks',
   loadRoot: () => import('./index.js'),
-  submodules: [],
+  children: [],
   title: { 'zh-CN': '任务', 'zh-TW': '任務', en: 'Tasks' },
   route: '/tasks',
   load: 'index.js',

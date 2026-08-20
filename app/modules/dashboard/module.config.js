@@ -4,7 +4,7 @@ const manifest = {
   order: 1,
   i18nNamespace: 'dashboard',
   loadRoot: () => import('./index.js'),
-  submodules: [],
+  children: [],
   title: { 'zh-CN': '仪表盘', 'zh-TW': '儀表板', en: 'Dashboard' },
   route: '/',
   load: 'index.js',

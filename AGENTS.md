@@ -22,7 +22,7 @@
 ## 2. 新增一个"模块"（侧边栏一级菜单）标准流程
 
 1. 新建 `app/modules/<id>/`，包含 `module.config.js` `index.js` `module.css` `i18n.js`（子模块另建 `sub/`）；
-2. `module.config.js` 按 `ARCHITECTURE.md` 2.3 节的 `ModuleManifest` 形状导出清单（id / icon / order / i18nNamespace / loadRoot / load / css / i18nFile / submodules）；
+2. `module.config.js` 按 `ARCHITECTURE.md` 2.3 节的 `ModuleManifest` 形状导出清单（id / icon / order / i18nNamespace / loadRoot / load / css / i18nFile / children / 可选 deps）；
 3. 在 `app/modules/registry.js` 补一行 `import()` 登记；
 4. 新建 `server/modules/<id>/routes.js`（必要时配 `service.js`），在 `server/core/api.js` 的路由汇总处登记（同样只加一行，不改其它模块路由）；
 5. 若需要新表：在 `server/db/schema.js` 追加 `CREATE TABLE IF NOT EXISTS`，表名遵循 `[module]_[entity]`；
@@ -33,7 +33,7 @@
 
 ## 3. 新增一个"子模块"（二级菜单）标准流程
 
-同上，实现文件放 `app/modules/<parent>/sub/<id>.js`（调用 `App.defineModule({ id, sub, render })`），`module.config.js` 中父模块的 `submodules` 数组补一项；子模块纯前端渲染，无独立后端路由；子模块与同级其它子模块之间同样禁止相互 import。
+同上，实现文件放 `app/modules/<parent>/sub/<id>.js`（调用 `App.defineModule({ id, sub, render })`），`module.config.js` 中父模块的 `children` 数组补一项；子模块纯前端渲染，无独立后端路由；子模块与同级其它子模块之间同样禁止相互 import。
 
 ## 4. 新增/复用 UI 组件规范
 

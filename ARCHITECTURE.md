@@ -93,11 +93,12 @@ const manifest = {
   load: 'index.js',
   css: 'module.css',
   i18nFile: 'i18n.js',
-  submodules: [],
+  children: [],          // 子菜单（docs/settings 有值，其余为空数组）
+  deps: ['app/lib/chart.umd.js'], // 可选：模块加载前预注入的脚本依赖（dashboard 使用）
 };
 ```
 
-`app/modules/registry.js` 仅登记各模块的 `module.config.js`。清单加载后由 `App.registerModule()` 建立路由和侧边栏菜单；实现文件通过原生 `<script>` 注入懒加载，以保持迁移模板的 IIFE 运行方式与动态路径兼容。
+`app/modules/registry.js` 仅登记各模块的 `module.config.js`。清单加载后由 `App.registerModule()` 建立路由和侧边栏菜单（侧边栏子菜单、路由匹配与导航均读取 `meta.children`，无 `submodules` 字段）；实现文件通过原生 `<script>` 注入懒加载，以保持迁移模板的 IIFE 运行方式与动态路径兼容；`meta.deps` 中的脚本在模块脚本注入前按序预加载（如 dashboard 的 Chart.js）。
 
 模块实现调用：
 
