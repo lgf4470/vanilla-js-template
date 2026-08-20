@@ -102,6 +102,34 @@
     return cn('ui-input', extra);
   }
 
+  // ---------- Switch(开关行:label + 描述 + 胶囊开关;label 包裹隐藏 checkbox) ----------
+  /** opts: { label, desc, checked, disabled, setting } */
+  function switchRow(opts) {
+    var o = opts || {};
+    return (
+      '<label class="ui-switch-row">' +
+      '<div class="ui-switch-info">' +
+      '<span class="ui-switch-label">' +
+      o.label +
+      '</span>' +
+      (o.desc ? '<p class="ui-switch-desc">' + o.desc + '</p>' : '') +
+      '</div>' +
+      '<span role="switch" aria-checked="' +
+      (o.checked ? 'true' : 'false') +
+      '" class="ui-switch' +
+      (o.checked ? ' is-on' : '') +
+      (o.disabled ? ' is-disabled' : '') +
+      '"></span>' +
+      '<input type="checkbox" class="ui-switch-input" data-setting="' +
+      o.setting +
+      '"' +
+      (o.checked ? ' checked' : '') +
+      (o.disabled ? ' disabled' : '') +
+      ' />' +
+      '</label>'
+    );
+  }
+
   // ---------- Dropdown ----------
   function dropdownTriggerClass(extra) {
     return cn(
@@ -517,6 +545,7 @@
     cardContentClass: cardContentClass,
     toggleItemClass: toggleItemClass,
     inputClass: inputClass,
+    switchRow: switchRow,
     dropdownTriggerClass: dropdownTriggerClass,
     dropdownContentClass: dropdownContentClass,
     dropdownItemClass: dropdownItemClass,

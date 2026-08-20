@@ -333,66 +333,6 @@
 }
 
 /* ---------- 开关行(通知页) ---------- */
-.sp-switch-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 1rem;
-  background: var(--card);
-}
-.sp-switch-row .sp-label {
-  font-size: 1rem;
-}
-.sp-switch-row .sp-field-desc {
-  font-size: 0.875rem;
-}
-.sp-switch {
-  position: relative;
-  display: inline-flex;
-  width: 2.75rem;
-  height: 1.5rem;
-  flex: none;
-  border-radius: 9999px;
-  background: var(--input);
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-.sp-switch::after {
-  content: '';
-  position: absolute;
-  top: 0.125rem;
-  left: 0.125rem;
-  width: 1.25rem;
-  height: 1.25rem;
-  border-radius: 9999px;
-  background: var(--primary-foreground);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
-  transition: transform 0.2s ease;
-}
-.dark .sp-switch::after {
-  background: var(--foreground);
-}
-.sp-switch.is-on {
-  background: var(--primary);
-}
-.sp-switch.is-on::after {
-  transform: translateX(1.25rem);
-}
-.sp-switch.is-disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-/* 真实 checkbox 隐藏,视觉用 span(label 包裹点击即切换) */
-.sp-switch-input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
 /* 自定义复选框输入(通知页 移动端):真实 input 隐藏,视觉复用 .sp-checkbox */
 .sp-checkbox-input {
   position: absolute;

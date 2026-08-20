@@ -669,30 +669,13 @@
   /* ---------- 通知(数据实时同步数据库 settings:notifications) ---------- */
   /** 胶囊开关:视觉 span + 真实 checkbox(label 包裹点击切换,change 事件委托更新) */
   function switchRow(t, labelKey, descKey, on, disabled, setting) {
-    return (
-      '<label class="sp-switch-row">' +
-      '<div class="sp-switch-info">' +
-      '<span class="sp-label">' +
-      t(labelKey) +
-      '</span>' +
-      '<p class="sp-field-desc">' +
-      t(descKey) +
-      '</p>' +
-      '</div>' +
-      '<span role="switch" aria-checked="' +
-      on +
-      '" class="sp-switch' +
-      (on ? ' is-on' : '') +
-      (disabled ? ' is-disabled' : '') +
-      '"></span>' +
-      '<input type="checkbox" class="sp-switch-input" data-setting="' +
-      setting +
-      '"' +
-      (on ? ' checked' : '') +
-      (disabled ? ' disabled' : '') +
-      ' />' +
-      '</label>'
-    );
+    return App.ui.switchRow({
+      label: t(labelKey),
+      desc: t(descKey),
+      checked: on,
+      disabled: disabled,
+      setting: setting,
+    });
   }
 
   function pageNotifications(ctx) {
