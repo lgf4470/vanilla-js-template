@@ -5,6 +5,7 @@
  * 敏感字段（邮箱）按 AGENTS 规范经 server/core/security 加密后落库。
  */
 
+import '../server/core/env.js'; // 加载项目根目录 .env（使 SQLITE_PATH / AUTH_PASSWORD 等生效）
 import { resolveDb } from '../server/db/resolver.js';
 import { ensureMigrated } from '../server/db/migrate.js';
 import { createRequire } from 'node:module';

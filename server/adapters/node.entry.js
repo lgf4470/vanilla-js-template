@@ -1,5 +1,7 @@
 'use strict';
 
+require('../core/env'); // 加载项目根目录 .env（本地开发 / Docker 用；不覆盖已存在的进程环境变量）
+
 const http = require('node:http');
 const { handleRequest } = require('../app');
 const { serveStatic } = require('../core/http/static');

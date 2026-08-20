@@ -4,6 +4,7 @@
  * 路径统一走 SQLITE_PATH（与 server/db/index.js 一致），兼容旧 DB_PATH 写法。
  */
 
+import '../server/core/env.js'; // 加载项目根目录 .env（使 SQLITE_PATH / AUTH_PASSWORD 等生效）
 import { existsSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { resolveDb } from '../server/db/resolver.js';

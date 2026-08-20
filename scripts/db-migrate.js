@@ -4,6 +4,7 @@
  * 建表 SQL 唯一来源为 server/db/schema.js，ensureMigrated 幂等。
  */
 
+import '../server/core/env.js'; // 加载项目根目录 .env（使 SQLITE_PATH / AUTH_PASSWORD 等生效）
 import { resolveDb } from '../server/db/resolver.js';
 import { ensureMigrated } from '../server/db/migrate.js';
 
