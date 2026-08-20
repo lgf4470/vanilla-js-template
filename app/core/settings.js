@@ -9,7 +9,7 @@
   'use strict';
 
   var STYLES = ['nova', 'vega', 'maia', 'lyra', 'mira', 'luma', 'sera', 'rhea'];
-  var BASE_COLORS = ['neutral', 'stone', 'zinc', 'mauve', 'olive', 'mist', 'taupe', 'dark', 'light'];
+  var BASE_COLORS = ['neutral', 'stone', 'zinc', 'mauve', 'olive', 'mist', 'taupe'];
   var CHART_COLORS = [
     'amber',
     'blue',
@@ -28,17 +28,10 @@
     'teal',
     'violet',
     'yellow',
-    'dark',
-    'light',
   ];
 
-  // 工作空间强调色:zinc + 主题面板的 17 种强调色(与主题设置面板一致);
-  // dark/light 是面板专属的明暗强调色,不适合作为工作空间图标色,故排除。
-  var WORKSPACE_COLORS = ['zinc'].concat(
-    CHART_COLORS.filter(function (c) {
-      return c !== 'dark' && c !== 'light';
-    })
-  );
+  // 工作空间强调色:zinc + 主题面板的 17 种强调色(与主题设置面板一致)
+  var WORKSPACE_COLORS = ['zinc'].concat(CHART_COLORS);
   // 工作空间预设图标(均为 icons-data.js 中已内置的 lucide 图标)
   var WORKSPACE_ICONS = [
     'house',
@@ -153,6 +146,9 @@
     headingFont: 'manrope',
     menuColor: 'default',
     menuAppearance: 'solid',
+    // 基础色/强调色开关:启用时应用所选色板;关闭时回退到主题模式默认配色
+    useBase: true,
+    useAccent: true,
   };
 
   /** 设置子页数据默认值(同步到数据库 settings:profile / settings:account / settings:notifications) */
@@ -252,6 +248,8 @@
           headingFont: ap.headingFont,
           menuColor: ap.menuColor,
           menuAppearance: ap.menuAppearance,
+          useBase: ap.useBase !== false,
+          useAccent: ap.useAccent !== false,
         };
       },
       apply: function (out, data) {
@@ -665,6 +663,10 @@
     var menuAppearance = readStorage(K('menu-appearance'));
     if (menuAppearance === 'solid' || menuAppearance === 'translucent')
       ap.menuAppearance = menuAppearance;
+    var useBase = readStorage(K('use-base'));
+    if (useBase === '0' || useBase === '1') ap.useBase = useBase === '1';
+    var useAccent = readStorage(K('use-accent'));
+    if (useAccent === '0' || useAccent === '1') ap.useAccent = useAccent === '1';
     return ap;
   }
 
@@ -749,8 +751,8 @@
 
     var applyMap = [
       ['style', s.appearance.style],
-      ['base', s.appearance.baseColor],
-      ['chart', s.appearance.chartColor],
+      ['base', s.appearance.useBase === false ? '' : s.appearance.baseColor],
+      ['chart', s.appearance.useAccent === false ? '' : s.appearance.chartColor],
       ['menu-color', s.appearance.menuColor],
       ['menu-appearance', s.appearance.menuAppearance],
     ];
@@ -760,7 +762,8 @@
       Array.prototype.forEach.call(root.classList, function (c) {
         if (c.indexOf(prefix + '-') === 0) root.classList.remove(c);
       });
-      root.classList.add(prefix + '-' + value);
+      // 开关关闭时值为空串:只清除旧类,不添加新类,回退到默认配色
+      if (value) root.classList.add(prefix + '-' + value);
     });
 
     var radiusPx = (
@@ -822,6 +825,8 @@
       ],
       [K('menu-color'), s.appearance.menuColor],
       [K('menu-appearance'), s.appearance.menuAppearance],
+      [K('use-base'), s.appearance.useBase === false ? '0' : '1'],
+      [K('use-accent'), s.appearance.useAccent === false ? '0' : '1'],
       [K('sidebar-variant'), s.sidebarVariant],
       [K('sidebar-collapsible'), s.sidebarCollapsible],
       [K('sidebar-width'), String(s.sidebarWidth)],
@@ -859,6 +864,8 @@
       K('heading-font'),
       K('menu-color'),
       K('menu-appearance'),
+      K('use-base'),
+      K('use-accent'),
       K('sidebar-variant'),
       K('sidebar-collapsible'),
       K('sidebar-width'),

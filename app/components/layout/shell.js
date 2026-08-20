@@ -570,12 +570,22 @@
         .join('') +
       '</div></div>' +
       '<div>' +
-      radio.sectionTitle(t('settings.baseColor')) +
+      radio.sectionTitleToggle(
+        t('settings.baseColor'),
+        s.appearance.useBase !== false,
+        'base',
+        t('settings.useBase')
+      ) +
       '<div>' +
       radio.swatchPicker(s.appearance.baseColor, settings.BASE_COLORS, 7, 'base') +
       '</div></div>' +
       '<div>' +
-      radio.sectionTitle(t('settings.chartColor')) +
+      radio.sectionTitleToggle(
+        t('settings.chartColor'),
+        s.appearance.useAccent !== false,
+        'chart',
+        t('settings.useAccent')
+      ) +
       '<div>' +
       radio.swatchPicker(
         s.appearance.chartColor,

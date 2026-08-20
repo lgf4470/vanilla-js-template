@@ -318,6 +318,25 @@
   function radioSectionTitle(label) {
     return '<div class="rg-section-title"><span>' + label + '</span></div>';
   }
+  /** 带启用开关的标题行(基础色/强调色):开关在标题同一行右侧,kind ∈ base|chart */
+  function radioSectionTitleToggle(label, checked, kind, ariaLabel) {
+    return (
+      '<div class="rg-section-title">' +
+      '<span>' +
+      label +
+      '</span>' +
+      '<button type="button" role="switch" aria-checked="' +
+      (checked ? 'true' : 'false') +
+      '" aria-label="' +
+      (ariaLabel || label) +
+      '" data-theme-toggle="' +
+      kind +
+      '" class="ui-switch ms-auto' +
+      (checked ? ' is-on' : '') +
+      '"></button>' +
+      '</div>'
+    );
+  }
   function radioCheck(selected) {
     return selected
       ? '<span class="rg-opt-check">' + App.icon.iconSvg('circle-check') + '</span>'
@@ -704,6 +723,7 @@
     radio: {
       gridClass: rgGridClass,
       sectionTitle: radioSectionTitle,
+      sectionTitleToggle: radioSectionTitleToggle,
       check: radioCheck,
       iconCard: radioIconCard,
       swatchPicker: radioSwatchPicker,

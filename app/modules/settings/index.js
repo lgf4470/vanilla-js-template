@@ -571,16 +571,24 @@
             .join('') +
           '</div>'
       ) +
-      optSection(
-        t,
-        'settings.baseColor',
-        radio.swatchPicker(ap.baseColor, st.BASE_COLORS, 7, 'base')
+      '<div class="sp-opt-group">' +
+      radio.sectionTitleToggle(
+        t('settings.baseColor'),
+        ap.useBase !== false,
+        'base',
+        t('settings.useBase')
       ) +
-      optSection(
-        t,
-        'settings.chartColor',
-        radio.swatchPicker(ap.chartColor, [ap.baseColor].concat(st.CHART_COLORS), 6, 'chart')
+      radio.swatchPicker(ap.baseColor, st.BASE_COLORS, 7, 'base') +
+      '</div>' +
+      '<div class="sp-opt-group">' +
+      radio.sectionTitleToggle(
+        t('settings.chartColor'),
+        ap.useAccent !== false,
+        'chart',
+        t('settings.useAccent')
       ) +
+      radio.swatchPicker(ap.chartColor, [ap.baseColor].concat(st.CHART_COLORS), 6, 'chart') +
+      '</div>' +
       optSection(
         t,
         'settings.style',

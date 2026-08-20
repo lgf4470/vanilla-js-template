@@ -414,6 +414,8 @@
         headingFont: a.headingFont,
         menuColor: a.menuColor,
         menuAppearance: a.menuAppearance,
+        useBase: a.useBase !== false,
+        useAccent: a.useAccent !== false,
       }),
       'settings:display': JSON.stringify({
         sidebarOpen: !!settings.sidebarOpen,
@@ -487,6 +489,8 @@
       }
       if (appearance.menuColor) set(K('menu-color'), String(appearance.menuColor));
       if (appearance.menuAppearance) set(K('menu-appearance'), String(appearance.menuAppearance));
+      if (typeof appearance.useBase === 'boolean') set(K('use-base'), appearance.useBase ? '1' : '0');
+      if (typeof appearance.useAccent === 'boolean') set(K('use-accent'), appearance.useAccent ? '1' : '0');
     }
     if (display && typeof display === 'object') {
       if (display.sidebarOpen != null) set(K('sidebar-open'), String(!!display.sidebarOpen));
@@ -1145,6 +1149,14 @@
       if (kind === 'theme') setTheme(value);
       else if (kind === 'sidebar') setSidebarVariant(value);
       else if (kind === 'layout') setLayout(value);
+      return;
+    }
+    // 基础色/强调色启用开关
+    var themeToggle = target.closest ? target.closest('[data-theme-toggle]') : null;
+    if (themeToggle) {
+      var tk = themeToggle.getAttribute('data-theme-toggle');
+      if (tk === 'base') setAppearance({ useBase: settings.appearance.useBase === false });
+      else if (tk === 'chart') setAppearance({ useAccent: settings.appearance.useAccent === false });
       return;
     }
     // 色板
