@@ -67,7 +67,7 @@ deploy:vercel:
 
 # Deno Deploy（Turso）
 deploy:deno:
-    npx deployctl@latest deploy --project=freebuff-nova server/adapters/deno.entry.mjs
+    npx deployctl@latest deploy --project=vanilla-js-template server/adapters/deno.entry.mjs
 
 # Docker / VPS（镜像默认本地 SQLite 持久卷，可用 DB_DRIVER=turso 切换）
 deploy:docker:

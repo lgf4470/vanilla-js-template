@@ -39,7 +39,7 @@ DB_PATH=/data/app.sqlite
 在仓库根目录执行：
 
 ```bash
-docker build --pull -t freebuff-nova:latest .
+docker build --pull -t vanilla-js-template:latest .
 ```
 
 镜像不需要 `npm install`，因为 `package.json` 的 `dependencies` 和 `devDependencies` 都为空。生产构建前可以先在本地运行：
@@ -56,33 +56,33 @@ node scripts/build.js
 创建数据卷并启动容器：
 
 ```bash
-docker volume create freebuff-nova-data
+docker volume create vanilla-js-template-data
 
 docker run -d \
-  --name freebuff-nova \
+  --name vanilla-js-template \
   --restart unless-stopped \
   -p 8080:8080 \
-  -v freebuff-nova-data:/data \
+  -v vanilla-js-template-data:/data \
   -e NODE_ENV=production \
   -e ENCRYPTION_KEY="$ENCRYPTION_KEY" \
   -e AUTH_PASSWORD_HASH="$AUTH_PASSWORD_HASH" \
-  freebuff-nova:latest
+  vanilla-js-template:latest
 ```
 
-`DB_DRIVER=sqlite`、`DB_PATH=/data/app.sqlite` 和 `PORT=8080` 已由镜像设置，不需要重复传入。首次启动时容器会自动迁移数据库；重建容器时只要保留 `freebuff-nova-data`，数据就不会丢失。
+`DB_DRIVER=sqlite`、`DB_PATH=/data/app.sqlite` 和 `PORT=8080` 已由镜像设置，不需要重复传入。首次启动时容器会自动迁移数据库；重建容器时只要保留 `vanilla-js-template-data`，数据就不会丢失。
 
 也可以绑定 VPS 目录：
 
 ```bash
-mkdir -p /srv/freebuff-nova/data
+mkdir -p /srv/vanilla-js-template/data
 docker run -d \
-  --name freebuff-nova \
+  --name vanilla-js-template \
   --restart unless-stopped \
   -p 8080:8080 \
-  -v /srv/freebuff-nova/data:/data \
+  -v /srv/vanilla-js-template/data:/data \
   -e NODE_ENV=production \
   -e ENCRYPTION_KEY="$ENCRYPTION_KEY" \
-  freebuff-nova:latest
+  vanilla-js-template:latest
 ```
 
 ## 4. 使用 Turso 运行
@@ -91,7 +91,7 @@ docker run -d \
 
 ```bash
 docker run -d \
-  --name freebuff-nova \
+  --name vanilla-js-template \
   --restart unless-stopped \
   -p 8080:8080 \
   -e NODE_ENV=production \
@@ -100,7 +100,7 @@ docker run -d \
   -e TURSO_AUTH_TOKEN="$TURSO_AUTH_TOKEN" \
   -e ENCRYPTION_KEY="$ENCRYPTION_KEY" \
   -e AUTH_PASSWORD_HASH="$AUTH_PASSWORD_HASH" \
-  freebuff-nova:latest
+  vanilla-js-template:latest
 ```
 
 使用 Turso 时仍建议从安全环境预先执行迁移：
@@ -131,14 +131,14 @@ curl -i http://127.0.0.1:8080/
 迁移由容器启动时自动执行，也可以在运行中的容器中手动执行：
 
 ```bash
-docker exec freebuff-nova node scripts/db-migrate.js
+docker exec vanilla-js-template node scripts/db-migrate.js
 ```
 
 SQLite 备份示例：
 
 ```bash
 docker run --rm \
-  -v freebuff-nova-data:/data \
+  -v vanilla-js-template-data:/data \
   -v "$PWD/backups:/backup" \
   alpine:latest \
   sh -c 'cp /data/app.sqlite /backup/app.sqlite.$(date +%Y%m%d%H%M%S)'
@@ -166,8 +166,8 @@ Workflow 会先执行源码检查，然后使用 GitHub Actions 内置的 `GITHU
 拉取示例：
 
 ```bash
-docker pull ghcr.io/<owner>/freebuff-nova:v1.0.0
-docker tag ghcr.io/<owner>/freebuff-nova:v1.0.0 freebuff-nova:current
+docker pull ghcr.io/<owner>/vanilla-js-template:v1.0.0
+docker tag ghcr.io/<owner>/vanilla-js-template:v1.0.0 vanilla-js-template:current
 ```
 
 运行时的 `ENCRYPTION_KEY`、Turso Token 和密码哈希不应写入镜像标签、Dockerfile、workflow 或 GHCR。
@@ -183,4 +183,4 @@ docker tag ghcr.io/<owner>/freebuff-nova:v1.0.0 freebuff-nova:current
 - 端口无法访问：确认映射为 `-p 8080:8080`，并检查 VPS 防火墙/反向代理；
 - Turso 驱动报缺少变量：同时配置 `DB_DRIVER=turso`、`TURSO_DATABASE_URL` 和 `TURSO_AUTH_TOKEN`；
 - 静态资源 404：确认请求经过 Node 入口，且镜像内包含 `index.html`、`app/` 和 `public/`；
-- 迁移失败：查看 `docker logs freebuff-nova`，修复配置后重启，不要删除生产数据卷。
+- 迁移失败：查看 `docker logs vanilla-js-template`，修复配置后重启，不要删除生产数据卷。

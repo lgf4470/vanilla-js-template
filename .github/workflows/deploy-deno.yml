@@ -42,4 +42,4 @@ jobs:
         run: node scripts/build.js
 
       - name: Deploy to Deno Deploy
-        run: npx deployctl@latest deploy --project=freebuff-nova --token "$DENO_DEPLOY_TOKEN" server/adapters/deno.entry.js
+        run: npx deployctl@latest deploy --project=vanilla-js-template --token "$DENO_DEPLOY_TOKEN" server/adapters/deno.entry.js

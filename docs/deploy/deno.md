@@ -50,7 +50,7 @@
 
 ```bash
 npx deployctl@latest deploy \
-  --project=freebuff-nova \
+  --project=vanilla-js-template \
   --token="$DENO_DEPLOY_TOKEN" \
   server/adapters/deno.entry.js
 ```

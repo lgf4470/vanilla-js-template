@@ -43,7 +43,7 @@ jobs:
         run: node scripts/build.js
 
       - name: Apply D1 migrations
-        run: npx wrangler@latest d1 migrations apply freebuff-nova --remote --config wrangler.toml
+        run: npx wrangler@latest d1 migrations apply vanilla-js-template --remote --config wrangler.toml
 
       - name: Deploy Workers application
         run: npx wrangler@latest deploy --config wrangler.toml

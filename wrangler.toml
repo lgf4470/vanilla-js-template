@@ -1,7 +1,7 @@
 # Cloudflare Workers/Pages 部署配置（见 ARCHITECTURE.md 第 5 节部署矩阵）
 # 需要先在 Cloudflare 控制台创建 D1 数据库，并把 database_id 填入下方。
 
-name = "freebuff-nova"
+name = "vanilla-js-template"
 main = "server/adapters/cloudflare.entry.js"
 compatibility_date = "2025-01-01"
 
@@ -13,7 +13,7 @@ binding = "ASSETS"
 # D1 数据库绑定（默认绑定名 DB，与 server/db/resolver.js 的探测逻辑一致）
 [[d1_databases]]
 binding = "DB"
-database_name = "freebuff-nova"
+database_name = "vanilla-js-template"
 database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
 migrations_dir = "server/db/migrations"
 

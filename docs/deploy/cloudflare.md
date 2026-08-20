@@ -1,6 +1,6 @@
 # Cloudflare Workers + D1 部署
 
-本项目在 Cloudflare 的后端入口是 `server/adapters/cloudflare.entry.js`，D1 绑定名固定为 `DB`，数据库名与 `wrangler.toml` 中的 `database_name` 保持一致（当前为 `freebuff-nova`）。前端生产静态文件由 `node scripts/build.js` 生成到 `dist/`。
+本项目在 Cloudflare 的后端入口是 `server/adapters/cloudflare.entry.js`，D1 绑定名固定为 `DB`，数据库名与 `wrangler.toml` 中的 `database_name` 保持一致（当前为 `vanilla-js-template`）。前端生产静态文件由 `node scripts/build.js` 生成到 `dist/`。
 
 > **静态资源已由 Workers Assets 提供**：`wrangler.toml` 的 `ASSETS` binding 指向构建产物 `dist/`，入口会把静态文件交给 Assets，并将未命中的前端路由回退到 `index.html`。每次部署前必须先运行 `node scripts/build.js`。
 
@@ -27,7 +27,7 @@
 当前配置的关键部分应类似：
 
 ```toml
-name = "freebuff-nova"
+name = "vanilla-js-template"
 main = "server/adapters/cloudflare.entry.js"
 compatibility_date = "2025-01-01"
 
@@ -37,7 +37,7 @@ binding = "ASSETS"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "freebuff-nova"
+database_name = "vanilla-js-template"
 database_id = "替换为真实的 database_id"
 migrations_dir = "server/db/migrations"
 ```
@@ -75,15 +75,15 @@ Cloudflare Workers 与 Pages 的静态托管入口不同：
 
 ```bash
 npx wrangler@latest login
-npx wrangler@latest d1 create freebuff-nova
+npx wrangler@latest d1 create vanilla-js-template
 ```
 
 把命令返回的 `database_id` 写入 `wrangler.toml`，然后构建并执行迁移：
 
 ```bash
 node scripts/build.js
-npx wrangler@latest d1 migrations list freebuff-nova --remote --config wrangler.toml
-npx wrangler@latest d1 migrations apply freebuff-nova --remote --config wrangler.toml
+npx wrangler@latest d1 migrations list vanilla-js-template --remote --config wrangler.toml
+npx wrangler@latest d1 migrations apply vanilla-js-template --remote --config wrangler.toml
 npx wrangler@latest deploy --config wrangler.toml
 ```
 
@@ -101,8 +101,8 @@ printf '%s' "$AUTH_PASSWORD_HASH" | npx wrangler@latest secret put AUTH_PASSWORD
 迁移文件是 `server/db/migrations/*.sql`，版本只增不改。发布迁移前检查：
 
 ```bash
-npx wrangler@latest d1 migrations list freebuff-nova --remote --config wrangler.toml
-npx wrangler@latest d1 migrations apply freebuff-nova --remote --config wrangler.toml
+npx wrangler@latest d1 migrations list vanilla-js-template --remote --config wrangler.toml
+npx wrangler@latest d1 migrations apply vanilla-js-template --remote --config wrangler.toml
 ```
 
 Cloudflare Worker 运行时无法读取仓库本地迁移目录，生产 schema 由 GitHub Actions/CLI 在发布前显式执行 D1 migration；Node 本地入口仍保留启动时的幂等迁移检查。新增数据库变更必须创建下一个序号的迁移文件，禁止修改已经发布的 SQL。
