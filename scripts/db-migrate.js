@@ -1,6 +1,7 @@
 /**
  * scripts/db-migrate.js — 执行数据库迁移（`just db:migrate`）
- * 驱动按 resolver 自动选型：本地开发默认 SQLite（./data/dev.sqlite）。
+ * 驱动按 resolver 自动选型：本地开发默认 SQLite（./sqlite.db）。
+ * 建表 SQL 唯一来源为 server/db/schema.js，ensureMigrated 幂等。
  */
 
 import { resolveDb } from '../server/db/resolver.js';
@@ -14,7 +15,7 @@ async function main() {
   } else {
     console.log(`[db:migrate] ${driver} — 已是最新，无需迁移`);
   }
-  await db.close();
+  if (db && typeof db.close === 'function') db.close();
   process.exit(0);
 }
 

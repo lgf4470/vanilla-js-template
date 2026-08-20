@@ -38,9 +38,14 @@ function init(opts) {
 
   const db = new DatabaseSync(dbPath);
   db.exec('PRAGMA journal_mode = WAL;');
-  if (opts.schema) db.exec(opts.schema);
-  migrateAuthSessions(db);
-  migrateAppSettingsSync(db);
+
+  /** 建表 + 旧结构迁移(幂等;init 与 initSchema 共用,供 db:migrate 等脚本重复调用) */
+  function applySchema(schema) {
+    if (schema) db.exec(schema);
+    migrateAuthSessions(db);
+    migrateAppSettingsSync(db);
+  }
+  applySchema(opts.schema);
 
   return {
     name: 'sqlite',
@@ -60,6 +65,11 @@ function init(opts) {
     run(sql, params) {
       const r = db.prepare(sql).run(...normalizeParams(params));
       return { changes: Number(r.changes), lastInsertRowid: Number(r.lastInsertRowid) };
+    },
+
+    /** 建表(与 turso / d1 驱动同接口;CREATE TABLE IF NOT EXISTS 幂等) */
+    initSchema(schema) {
+      applySchema(schema);
     },
 
     close() {
