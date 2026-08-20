@@ -484,7 +484,9 @@
 
   function labelBadge(value) {
     var l = byValue(LABELS, value);
-    return l ? '<span class="tk-badge" data-variant="outline">' + l.label + '</span>' : '';
+    return l
+      ? '<span class="' + App.ui.badgeClass('outline') + '">' + l.label + '</span>'
+      : '';
   }
 
   function statusCell(t) {

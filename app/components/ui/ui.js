@@ -60,6 +60,8 @@
     secondary:
       'border-transparent bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80',
     outline: 'border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground',
+    destructive:
+      'border-transparent bg-destructive/10 text-destructive [a]:hover:bg-destructive/20 dark:bg-destructive/20 dark:[a]:hover:bg-destructive/30',
   };
   function badgeClass(variant, extra) {
     return cn(BADGE_BASE, BADGE_VARIANTS[variant] || BADGE_VARIANTS.secondary, extra);
