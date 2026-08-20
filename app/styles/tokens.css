@@ -645,6 +645,13 @@ textarea.ui-input {
 /* ---------- 强调色(chart-*)驱动全局主色 ----------
  * 主题设置"强调色"选中的颜色同时成为 --primary 系列(按钮/开关/选中态/侧边栏高亮/聚焦环);
  * 色值复用上方 .swatch-* 色板,确保面板预览与真实渲染一致。 */
+/* ---------- 基础色 dark/light:强制明/暗中性面(与主题模式独立) ----------
+ * base-dark 强制深色表面(即使主题模式为浅色),base-light 强制浅色表面;
+ * 值取自 base-zinc 的 dark/light 定义,保持与其余基础色一致的变量集合。 */
+:root.base-dark{--background:oklch(14.1% .005 285.823);--foreground:oklch(98.5% 0 0);--card:oklch(21% .006 285.885);--card-foreground:oklch(98.5% 0 0);--popover:oklch(21% .006 285.885);--popover-foreground:oklch(98.5% 0 0);--border:oklch(100% 0 0/.1);--input:oklch(100% 0 0/.15);--ring:oklch(55.2% .016 285.938);--sidebar:oklch(21% .006 285.885);--sidebar-foreground:oklch(98.5% 0 0);--sidebar-border:oklch(100% 0 0/.1);--sidebar-ring:oklch(55.2% .016 285.938);--primary:oklch(92% .004 286.32);--primary-foreground:oklch(21% .006 285.885);--secondary:oklch(27.4% .006 286.033);--secondary-foreground:oklch(98.5% 0 0);--muted:oklch(27.4% .006 286.033);--muted-foreground:oklch(70.5% .015 286.067);--accent:oklch(27.4% .006 286.033);--accent-foreground:oklch(98.5% 0 0);--destructive:oklch(70.4% .191 22.216);--sidebar-primary:oklch(48.8% .243 264.376);--sidebar-primary-foreground:oklch(98.5% 0 0);--sidebar-accent:oklch(27.4% .006 286.033);--sidebar-accent-foreground:oklch(98.5% 0 0)}
+:root.dark.base-dark{--background:oklch(14.1% .005 285.823);--foreground:oklch(98.5% 0 0);--card:oklch(21% .006 285.885);--card-foreground:oklch(98.5% 0 0);--popover:oklch(21% .006 285.885);--popover-foreground:oklch(98.5% 0 0);--border:oklch(100% 0 0/.1);--input:oklch(100% 0 0/.15);--ring:oklch(55.2% .016 285.938);--sidebar:oklch(21% .006 285.885);--sidebar-foreground:oklch(98.5% 0 0);--sidebar-border:oklch(100% 0 0/.1);--sidebar-ring:oklch(55.2% .016 285.938);--primary:oklch(92% .004 286.32);--primary-foreground:oklch(21% .006 285.885);--secondary:oklch(27.4% .006 286.033);--secondary-foreground:oklch(98.5% 0 0);--muted:oklch(27.4% .006 286.033);--muted-foreground:oklch(70.5% .015 286.067);--accent:oklch(27.4% .006 286.033);--accent-foreground:oklch(98.5% 0 0);--destructive:oklch(70.4% .191 22.216);--sidebar-primary:oklch(48.8% .243 264.376);--sidebar-primary-foreground:oklch(98.5% 0 0);--sidebar-accent:oklch(27.4% .006 286.033);--sidebar-accent-foreground:oklch(98.5% 0 0)}
+:root.base-light{--background:oklch(100% 0 0);--foreground:oklch(14.1% .005 285.823);--card:oklch(100% 0 0);--card-foreground:oklch(14.1% .005 285.823);--popover:oklch(100% 0 0);--popover-foreground:oklch(14.1% .005 285.823);--border:oklch(92% .004 286.32);--input:oklch(92% .004 286.32);--ring:oklch(70.5% .015 286.067);--sidebar:oklch(98.5% 0 0);--sidebar-foreground:oklch(14.1% .005 285.823);--sidebar-border:oklch(92% .004 286.32);--sidebar-ring:oklch(70.5% .015 286.067);--primary:oklch(21% .006 285.885);--primary-foreground:oklch(98.5% 0 0);--secondary:oklch(96.7% .001 286.375);--secondary-foreground:oklch(21% .006 285.885);--muted:oklch(96.7% .001 286.375);--muted-foreground:oklch(55.2% .016 285.938);--accent:oklch(96.7% .001 286.375);--accent-foreground:oklch(21% .006 285.885);--destructive:oklch(57.7% .245 27.325);--sidebar-primary:oklch(21% .006 285.885);--sidebar-primary-foreground:oklch(98.5% 0 0);--sidebar-accent:oklch(96.7% .001 286.375);--sidebar-accent-foreground:oklch(21% .006 285.885)}
+:root.dark.base-light{--background:oklch(100% 0 0);--foreground:oklch(14.1% .005 285.823);--card:oklch(100% 0 0);--card-foreground:oklch(14.1% .005 285.823);--popover:oklch(100% 0 0);--popover-foreground:oklch(14.1% .005 285.823);--border:oklch(92% .004 286.32);--input:oklch(92% .004 286.32);--ring:oklch(70.5% .015 286.067);--sidebar:oklch(98.5% 0 0);--sidebar-foreground:oklch(14.1% .005 285.823);--sidebar-border:oklch(92% .004 286.32);--sidebar-ring:oklch(70.5% .015 286.067);--primary:oklch(21% .006 285.885);--primary-foreground:oklch(98.5% 0 0);--secondary:oklch(96.7% .001 286.375);--secondary-foreground:oklch(21% .006 285.885);--muted:oklch(96.7% .001 286.375);--muted-foreground:oklch(55.2% .016 285.938);--accent:oklch(96.7% .001 286.375);--accent-foreground:oklch(21% .006 285.885);--destructive:oklch(57.7% .245 27.325);--sidebar-primary:oklch(21% .006 285.885);--sidebar-primary-foreground:oklch(98.5% 0 0);--sidebar-accent:oklch(96.7% .001 286.375);--sidebar-accent-foreground:oklch(21% .006 285.885)}
 :root.chart-zinc{--primary:oklch(62% .04 285);--primary-foreground:var(--nova-white);--ring:oklch(62% .04 285);--sidebar-primary:oklch(62% .04 285);--sidebar-primary-foreground:var(--nova-white)}
 :root.dark.chart-zinc{--primary:oklch(62% .04 285);--primary-foreground:var(--nova-white);--ring:oklch(62% .04 285);--sidebar-primary:oklch(62% .04 285);--sidebar-primary-foreground:var(--nova-white)}
 :root.chart-neutral{--primary:oklch(62% 0 0);--primary-foreground:var(--nova-white);--ring:oklch(62% 0 0);--sidebar-primary:oklch(62% 0 0);--sidebar-primary-foreground:var(--nova-white)}
@@ -693,6 +700,14 @@ textarea.ui-input {
 :root.dark.chart-violet{--primary:oklch(49.1% .27 292.581);--primary-foreground:var(--nova-white);--ring:oklch(49.1% .27 292.581);--sidebar-primary:oklch(49.1% .27 292.581);--sidebar-primary-foreground:var(--nova-white)}
 :root.chart-yellow{--primary:oklch(85.2% .199 91.936);--primary-foreground:var(--nova-white);--ring:oklch(85.2% .199 91.936);--sidebar-primary:oklch(85.2% .199 91.936);--sidebar-primary-foreground:var(--nova-white)}
 :root.dark.chart-yellow{--primary:oklch(85.2% .199 91.936);--primary-foreground:var(--nova-white);--ring:oklch(85.2% .199 91.936);--sidebar-primary:oklch(85.2% .199 91.936);--sidebar-primary-foreground:var(--nova-white)}
+/* ---------- 强调色 dark/light:纯黑/纯白主色 ----------
+ * dark = 近黑主色(浅色主题下按钮即深色);light = 近白主色(深色主题下按钮即浅色)。 */
+.swatch-dark{background-color:oklch(24% 0 0)}
+.swatch-light{background-color:oklch(94% 0 0)}
+:root.chart-dark{--primary:oklch(21% .006 285.885);--primary-foreground:var(--nova-white);--ring:oklch(21% .006 285.885);--sidebar-primary:oklch(21% .006 285.885);--sidebar-primary-foreground:var(--nova-white);--chart-1:oklch(87.1% .006 286.286);--chart-2:oklch(55.2% .016 285.938);--chart-3:oklch(44.2% .017 285.786);--chart-4:oklch(37% .013 285.805);--chart-5:oklch(27.4% .006 286.033)}
+:root.dark.chart-dark{--primary:oklch(21% .006 285.885);--primary-foreground:var(--nova-white);--ring:oklch(21% .006 285.885);--sidebar-primary:oklch(21% .006 285.885);--sidebar-primary-foreground:var(--nova-white);--chart-1:oklch(87.1% .006 286.286);--chart-2:oklch(55.2% .016 285.938);--chart-3:oklch(44.2% .017 285.786);--chart-4:oklch(37% .013 285.805);--chart-5:oklch(27.4% .006 286.033)}
+:root.chart-light{--primary:oklch(94% 0 0);--primary-foreground:oklch(14.1% .005 285.823);--ring:oklch(94% 0 0);--sidebar-primary:oklch(94% 0 0);--sidebar-primary-foreground:oklch(14.1% .005 285.823);--chart-1:oklch(87.1% .006 286.286);--chart-2:oklch(55.2% .016 285.938);--chart-3:oklch(44.2% .017 285.786);--chart-4:oklch(37% .013 285.805);--chart-5:oklch(27.4% .006 286.033)}
+:root.dark.chart-light{--primary:oklch(94% 0 0);--primary-foreground:oklch(14.1% .005 285.823);--ring:oklch(94% 0 0);--sidebar-primary:oklch(94% 0 0);--sidebar-primary-foreground:oklch(14.1% .005 285.823);--chart-1:oklch(87.1% .006 286.286);--chart-2:oklch(55.2% .016 285.938);--chart-3:oklch(44.2% .017 285.786);--chart-4:oklch(37% .013 285.805);--chart-5:oklch(27.4% .006 286.033)}
 
 /* ---------- Apps 模块"已连接"语义色(apps 模块消费;跟随 dark 主题) ---------- */
 :root {
@@ -709,7 +724,7 @@ textarea.ui-input {
 /* ---------- 菜单颜色:反色(menu-color-inverted) ----------
  * 与当前主题相反:light 下侧边栏为深色、dark 下为浅色;
  * 色值取自 base-zinc 的 dark/light 定义,追加在末尾以覆盖 base-*/chart-* 的同名变量。 */
-.menu-color-inverted {
+:root.menu-color-inverted {
   --sidebar: oklch(21% .006 285.885);
   --sidebar-foreground: oklch(98.5% 0 0);
   --sidebar-border: oklch(100% 0 0 / .1);
@@ -719,7 +734,7 @@ textarea.ui-input {
   --sidebar-primary-foreground: oklch(21% .006 285.885);
   --sidebar-ring: oklch(55.2% .016 285.938);
 }
-.dark.menu-color-inverted {
+:root.dark.menu-color-inverted {
   --sidebar: oklch(98.5% 0 0);
   --sidebar-foreground: oklch(14.1% .005 285.823);
   --sidebar-border: oklch(92% .004 286.32);

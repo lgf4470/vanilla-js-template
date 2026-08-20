@@ -9,7 +9,7 @@
   'use strict';
 
   var STYLES = ['nova', 'vega', 'maia', 'lyra', 'mira', 'luma', 'sera', 'rhea'];
-  var BASE_COLORS = ['neutral', 'stone', 'zinc', 'mauve', 'olive', 'mist', 'taupe'];
+  var BASE_COLORS = ['neutral', 'stone', 'zinc', 'mauve', 'olive', 'mist', 'taupe', 'dark', 'light'];
   var CHART_COLORS = [
     'amber',
     'blue',
@@ -28,10 +28,17 @@
     'teal',
     'violet',
     'yellow',
+    'dark',
+    'light',
   ];
 
-  // 工作空间强调色:zinc + 主题面板的 17 种强调色(与主题设置面板一致)
-  var WORKSPACE_COLORS = ['zinc'].concat(CHART_COLORS);
+  // 工作空间强调色:zinc + 主题面板的 17 种强调色(与主题设置面板一致);
+  // dark/light 是面板专属的明暗强调色,不适合作为工作空间图标色,故排除。
+  var WORKSPACE_COLORS = ['zinc'].concat(
+    CHART_COLORS.filter(function (c) {
+      return c !== 'dark' && c !== 'light';
+    })
+  );
   // 工作空间预设图标(均为 icons-data.js 中已内置的 lucide 图标)
   var WORKSPACE_ICONS = [
     'house',
