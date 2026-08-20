@@ -1538,38 +1538,18 @@
     picked.forEach(function (tid) {
       var tg = tagById(tid);
       if (!tg) return;
-      var col = '';
-      try {
-        col = App.ui.color.resolveColor(tg.color);
-      } catch (e) {
-        /* noop */
-      }
-      pills +=
-        '<span class="hub-tagpill" style="' +
-        (col ? '--tagc:' + col + ';' : '') +
-        '" data-tip="' +
-        escAttr(t('apihub.removeTag')) +
-        '">' +
-        '<span class="hub-tagpill-hash">#</span>' +
-        esc(tg.name) +
-        '<button type="button" class="hub-tagpill-x" data-hub-tagpill="' +
-        escAttr(key) +
-        '" data-id="' +
-        escAttr(tg.id) +
-        '" aria-label="' +
-        escAttr(t('apihub.removeTag')) +
-        '" data-tip="' +
-        escAttr(t('apihub.removeTag')) +
-        '">' +
-        icon('x', 'size-3') +
-        '</button>' +
-        '</span>';
+      pills += App.ui.tagPill({
+        name: tg.name,
+        color: tg.color,
+        tip: t('apihub.removeTag'),
+        removeLabel: t('apihub.removeTag'),
+        removeAttrs:
+          'data-hub-tagpill="' + escAttr(key) + '" data-id="' + escAttr(tg.id) + '"',
+      });
     });
     return (
       '<span class="hub-route-tags">' +
-      '<span class="hub-tagpills">' +
-      pills +
-      '</span>' +
+      App.ui.tagPills(pills) +
       '<button type="button" class="hub-icon-btn hub-tagbtn" data-hub-act="addtag" data-key="' +
       escAttr(key) +
       '" data-tip="' +
@@ -1679,75 +1659,56 @@
     );
   }
 
-  /* ---------- 路由右键菜单(⋯ 按钮 + 右键共用,body 级固定浮层) ---------- */
-  var routeCtxPop = null;
+  /* ---------- 路由右键菜单(⋯ 按钮 + 右键共用,公共 App.ui.contextMenu) ---------- */
   function routeCtxItemsHtml(key, r) {
     var m = memberships(key, r);
     var isCustom = !r.builtIn;
-    function item(act, label, iconName, extra, danger) {
-      return (
-        '<button type="button" class="hub-ctxitem' +
-        (extra || '') +
-        (danger ? ' is-danger' : '') +
-        '" data-hub-ctx="' +
-        act +
-        '" data-key="' +
-        escAttr(key) +
-        '">' +
-        icon(iconName, '') +
-        esc(label) +
-        '</button>'
-      );
-    }
-    function check(on) {
-      return on ? '<span class="hub-ctx-check">' + icon('check', '') + '</span>' : '';
-    }
+    var item = function (act, label, iconName, opts) {
+      return App.ui.contextMenu.item(iconName, label, {
+        attrs:
+          'data-hub-ctx="' +
+          act +
+          '" data-key="' +
+          escAttr(key) +
+          '"' +
+          (opts && opts.attrs ? ' ' + opts.attrs : ''),
+        isOn: !!(opts && opts.isOn),
+        danger: !!(opts && opts.danger),
+        check: !!(opts && opts.check),
+      });
+    };
     var html =
       item('run', t('apihub.run'), 'send') +
-      item('fav', m.favorite ? t('apihub.unfavorite') : t('apihub.favorite'), 'star', m.favorite ? ' is-on' : '') +
-      item('pin', m.pinned ? t('apihub.unpin') : t('apihub.pin'), 'circle-dot', m.pinned ? ' is-on' : '') +
-      '<div class="hub-ctxsep"></div>';
+      item('fav', m.favorite ? t('apihub.unfavorite') : t('apihub.favorite'), 'star', {
+        isOn: m.favorite,
+      }) +
+      item('pin', m.pinned ? t('apihub.unpin') : t('apihub.pin'), 'circle-dot', {
+        isOn: m.pinned,
+      }) +
+      App.ui.contextMenu.separator();
     // 分组子菜单
     var groups = state.config.groups || [];
-    html +=
-      '<div class="hub-ctxwrap">' +
-      '<button type="button" class="hub-ctxitem hub-ctxparent">' +
-      icon('folder', '') +
-      esc(t('apihub.assignGroup')) +
-      icon('chevron-right', 'hub-ctx-caret') +
-      '</button>' +
-      '<div class="hub-ctxsubmenu">' +
-      (groups.length
+    html += App.ui.contextMenu.submenu(
+      t('apihub.assignGroup'),
+      'folder',
+      groups.length
         ? groups
             .map(function (g) {
               var on = (m.groupIds || []).indexOf(g.id) !== -1;
-              return (
-                '<button type="button" class="hub-ctxitem" data-hub-ctx="setgroup" data-key="' +
-                escAttr(key) +
-                '" data-id="' +
-                escAttr(g.id) +
-                '">' +
-                icon('folder', '') +
-                esc(g.name) +
-                check(on) +
-                '</button>'
-                              );
+              return item('setgroup', g.name, 'folder', {
+                attrs: 'data-id="' + escAttr(g.id) + '"',
+                check: on,
+              });
             })
             .join('')
-        : '<div class="hub-ctxempty">' + esc(t('apihub.noGroups')) + '</div>') +
-      '</div>' +
-      '</div>';
+        : App.ui.contextMenu.empty(t('apihub.noGroups'))
+    );
     // 标签子菜单
     var tags = state.config.tags || [];
-    html +=
-      '<div class="hub-ctxwrap">' +
-      '<button type="button" class="hub-ctxitem hub-ctxparent">' +
-      icon('layers', '') +
-      esc(t('apihub.assignTags')) +
-      icon('chevron-right', 'hub-ctx-caret') +
-      '</button>' +
-      '<div class="hub-ctxsubmenu">' +
-      (tags.length
+    html += App.ui.contextMenu.submenu(
+      t('apihub.assignTags'),
+      'layers',
+      tags.length
         ? tags
             .map(function (tg) {
               var on = (m.tagIds || []).indexOf(tg.id) !== -1;
@@ -1757,62 +1718,39 @@
               } catch (e) {
                 /* noop */
               }
-              return (
-                '<button type="button" class="hub-ctxitem" data-hub-ctx="settag" data-key="' +
-                escAttr(key) +
-                '" data-id="' +
-                escAttr(tg.id) +
-                '">' +
-                '<span class="hub-ctx-hash" style="' +
-                (col ? 'color:' + col + ';' : '') +
-                '">#</span>' +
-                esc(tg.name) +
-                check(on) +
-                '</button>'
-              );
+              return App.ui.contextMenu.item(null, tg.name, {
+                attrs:
+                  'data-hub-ctx="settag" data-key="' +
+                  escAttr(key) +
+                  '" data-id="' +
+                  escAttr(tg.id) +
+                  '"',
+                check: on,
+                hashColor: col,
+              });
             })
             .join('')
-        : '<div class="hub-ctxempty">' + esc(t('apihub.noTags')) + '</div>') +
-      '</div>' +
-      '</div>';
+        : App.ui.contextMenu.empty(t('apihub.noTags'))
+    );
     html +=
-      '<div class="hub-ctxsep"></div>' +
+      App.ui.contextMenu.separator() +
       item('auth', t('apihub.auth'), 'key-round') +
       item('copylink', t('apihub.copyLink'), 'link') +
       item('copypath', t('apihub.copyPath'), 'route');
     if (isCustom) {
-      html += item('editroute', t('apihub.edit'), 'pencil') + item('delroute', t('apihub.delete'), 'trash-2', '', true);
+      html +=
+        item('editroute', t('apihub.edit'), 'pencil') +
+        item('delroute', t('apihub.delete'), 'trash-2', { danger: true });
     }
     return html;
   }
   function routeCtxPopup(key, anchorEl, x, y) {
-    closeRouteCtxPopup();
     var r = findRoute(key);
     if (!r) return;
-    routeCtxPop = document.createElement('div');
-    routeCtxPop.className = 'hub-ctxpop';
-    routeCtxPop.setAttribute('data-hub-ctxpop', key);
-    routeCtxPop.innerHTML = routeCtxItemsHtml(key, r);
-    document.body.appendChild(routeCtxPop);
-    var w = routeCtxPop.offsetWidth || 200;
-    var h = routeCtxPop.offsetHeight || 260;
-    var left, top;
-    if (anchorEl && anchorEl.getBoundingClientRect) {
-      var rect = anchorEl.getBoundingClientRect();
-      left = rect.right - w;
-      top = rect.bottom + 4;
-      if (left < 8) left = 8;
-      if (top + h > window.innerHeight - 8) top = Math.max(8, rect.top - h - 4);
-    } else {
-      left = Math.max(4, x || 0);
-      top = Math.max(4, y || 0);
-    }
-    routeCtxPop.style.left = left + 'px';
-    routeCtxPop.style.top = top + 'px';
+    App.ui.contextMenu.open(routeCtxItemsHtml(key, r), { anchorEl: anchorEl, x: x, y: y });
   }
   function closeRouteCtxPopup() {
-    if (routeCtxPop && routeCtxPop.parentNode) routeCtxPop.parentNode.removeChild(routeCtxPop);
-    routeCtxPop = null;
+    App.ui.contextMenu.close();
   }
 
   /* ---------- 标签 Popover(书签图标触发,Chrome 添加联系人风格) ---------- */
@@ -2427,7 +2365,6 @@
       return;
     }
     // 点击路由右键菜单外部 → 收起
-    if (!target.closest('[data-hub-ctxpop]')) closeRouteCtxPopup();
     // 点击标签 Popover 外部(书签按钮除外)→ 收起;点「完成」也收起
     if (!target.closest('[data-hub-tagpop]') && !target.closest('[data-hub-act="addtag"]') && !target.closest('[data-tp-pop]')) closeTagPopover();
     if (target.closest('[data-tp-done]')) closeTagPopover();
