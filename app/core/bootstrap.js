@@ -21,6 +21,7 @@
     'app/components/ui/color-picker.js',
     'app/components/ui/group-tree.js',
     'app/components/ui/tag-picker.js',
+    'app/components/ui/data-table.js',
     'app/components/ui/avatar.js',
     'app/components/layout/shell.js',
     'app/core/app.js',

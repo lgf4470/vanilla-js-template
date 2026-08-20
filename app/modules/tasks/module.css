@@ -1,402 +1,9 @@
 /* ============================================================
  * tasks 模块 — 私有样式(懒加载)
- * 全部使用设计系统 CSS 变量,跟随深浅主题。
+ * 表格(搜索/过滤/排序/选择/分页/批量条)样式已提取到公共组件
+ * data-table.js(注入式,dt- 前缀);本文件只保留任务业务弹层样式。
+ * 全部使用设计系统 CSS 变量,跟随深浅主题与圆角设置。
  * ============================================================ */
-
-/* ---------- 页头 ---------- */
-.tk-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-.tk-header h1 {
-  font-size: 1.5rem;
-  line-height: 2rem;
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  font-family: var(--font-heading-base, inherit);
-}
-.tk-header p {
-  font-size: 0.875rem;
-  color: var(--muted-foreground);
-  margin-top: 0.25rem;
-}
-
-/* ---------- 工具栏 ---------- */
-.tk-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin: 1rem 0;
-}
-.tk-toolbar-left,
-.tk-toolbar-right {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-.tk-search-input-wrap {
-  width: 9.375rem; /* w-37.5: 与参考项目一致 */
-  flex: none;
-}
-@media (min-width: 1024px) {
-  .tk-search-input-wrap {
-    width: 15.625rem; /* lg:w-62.5 */
-  }
-}
-.tk-filter-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  height: 2.25rem;
-  border-radius: 0.375rem;
-  border: 1px solid var(--border);
-  background: var(--background);
-  padding: 0 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--foreground);
-  cursor: pointer;
-  transition:
-    background-color 0.15s,
-    color 0.15s;
-}
-.tk-filter-btn:hover,
-.tk-filter-btn[aria-expanded='true'] {
-  background: var(--accent);
-  color: var(--accent-foreground);
-}
-.tk-filter-btn-active {
-  border-color: var(--ring);
-}
-
-/* ---------- 下拉内容 ---------- */
-.tk-filter-list {
-  max-height: 18rem;
-  overflow-y: auto;
-  padding: 0.25rem;
-}
-.tk-filter-search-wrap {
-  margin: 0.25rem 0.5rem 0.5rem;
-  min-width: 0;
-}
-.tk-filter-opt {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  gap: 0.5rem;
-  border-radius: 0.375rem;
-  padding: 0.375rem 0.5rem;
-  font-size: 0.875rem;
-  color: var(--foreground);
-  cursor: pointer;
-  background: transparent;
-  border: none;
-  text-align: left;
-}
-.tk-filter-opt:hover {
-  background: var(--accent);
-  color: var(--accent-foreground);
-}
-.tk-filter-empty {
-  padding: 0.5rem;
-  font-size: 0.875rem;
-  color: var(--muted-foreground);
-  text-align: center;
-}
-
-/* ---------- 表格 ---------- */
-.tk-table-wrap {
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  overflow: auto;
-  background: var(--card);
-}
-.tk-table {
-  width: 100%;
-  min-width: 36rem; /* min-w-xl: 窄屏横向滚动,与参考一致 */
-  border-collapse: collapse;
-  font-size: 0.875rem;
-}
-.tk-th {
-  height: 2.5rem;
-  padding: 0 0.5rem;
-  text-align: left;
-  font-weight: 500;
-  color: var(--foreground);
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
-  background: var(--card);
-  vertical-align: middle;
-}
-/* 参考:表格内 checkbox 轻微下移对齐文本基线(translate-y-0.5) */
-.tk-th .tk-checkbox .tk-check,
-.tk-td .tk-checkbox .tk-check {
-  transform: translateY(2px);
-}
-.tk-th-sortable {
-  cursor: pointer;
-  user-select: none;
-}
-.tk-th-sortable:hover {
-  color: var(--foreground);
-}
-.tk-td {
-  height: 3rem;
-  padding: 0.75rem 0.5rem;
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
-}
-.tk-table tbody tr:last-child .tk-td {
-  border-bottom: none;
-}
-.tk-table tbody tr {
-  border-bottom: 1px solid var(--border);
-  transition: background-color 0.15s;
-}
-.tk-table tbody tr:last-child {
-  border-bottom: none;
-}
-.tk-table tbody tr:hover {
-  background: color-mix(in oklab, var(--muted) 50%, transparent);
-}
-.tk-table tbody tr.is-selected {
-  background: var(--muted);
-}
-.tk-row-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-  color: var(--foreground);
-  text-decoration: none;
-}
-.tk-row-title:hover {
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-.tk-status-dot {
-  border-radius: 9999px;
-}
-.tk-status-dot[data-state='done'] {
-  color: var(--primary);
-}
-.tk-status-dot[data-state='canceled'] {
-  color: var(--muted-foreground);
-}
-.tk-status-dot[data-state='todo'],
-.tk-status-dot[data-state='backlog'] {
-  color: var(--muted-foreground);
-}
-.tk-status-dot[data-state='in progress'] {
-  color: var(--primary);
-} /* ---------- 复选框(视觉为 .tk-check 方块,隐藏 input 仅为可访问性/语义) ---------- */
-.tk-check {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1rem;
-  height: 1rem;
-  flex: none;
-  border-radius: 0.25rem;
-  border: 1px solid var(--border);
-  background: var(--background);
-  color: transparent;
-  cursor: pointer;
-  transition:
-    background-color 0.15s,
-    border-color 0.15s,
-    color 0.15s;
-}
-.tk-check svg {
-  opacity: 0;
-  width: 0.875rem;
-  height: 0.875rem;
-}
-.tk-check.is-checked {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: var(--primary-foreground);
-}
-.tk-check.is-checked svg {
-  opacity: 1;
-}
-.tk-check.is-indeterminate {
-  background: var(--primary);
-  border-color: var(--primary);
-}
-.tk-check.is-indeterminate::after {
-  content: '';
-  display: block;
-  width: 0.5rem;
-  height: 0.125rem;
-  border-radius: 1px;
-  background: var(--primary-foreground);
-}
-.tk-check-input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-}
-
-/* ---------- 分页 ---------- */
-.tk-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-  padding: 0.5rem 1rem;
-  border-top: 1px solid var(--border);
-  font-size: 0.875rem;
-  color: var(--muted-foreground);
-}
-.tk-pagination-left {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.tk-pagination-size {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-}
-.tk-page-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 2rem;
-  min-width: 2rem;
-  border-radius: 0.375rem;
-  border: 1px solid var(--border);
-  background: var(--background);
-  color: var(--foreground);
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-.tk-page-btn:hover:not(:disabled) {
-  background: var(--accent);
-  color: var(--accent-foreground);
-}
-.tk-page-btn:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-.tk-page-btn[data-active='true'] {
-  background: var(--primary);
-  color: var(--primary-foreground);
-  border-color: var(--primary);
-}
-.tk-page-ellipsis {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 2rem;
-  height: 2rem;
-  color: var(--muted-foreground);
-}
-
-/* ---------- 批量操作浮动条(参考:固定在视口底部居中,毛玻璃药丸) ---------- */
-.tk-bulk-bar {
-  position: fixed;
-  bottom: 1.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  background: color-mix(in oklab, var(--background) 95%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: var(--foreground);
-  box-shadow: 0 16px 48px rgb(0 0 0 / 0.18);
-  padding: 0.5rem;
-  transition: transform 0.3s ease;
-}
-.tk-bulk-bar:hover {
-  transform: translateX(-50%) scale(1.05);
-}
-.tk-bulk-count {
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-/* ---------- 通用按钮 ---------- */
-.tk-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.375rem;
-  height: 2.25rem;
-  border-radius: 0.375rem;
-  padding: 0 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition:
-    background-color 0.15s,
-    border-color 0.15s,
-    opacity 0.15s;
-  border: 1px solid transparent;
-}
-.tk-btn[data-variant='default'] {
-  background: var(--primary);
-  color: var(--primary-foreground);
-}
-.tk-btn[data-variant='default']:hover {
-  opacity: 0.9;
-}
-.tk-btn[data-variant='outline'] {
-  background: var(--background);
-  border-color: var(--border);
-  color: var(--foreground);
-}
-.tk-btn[data-variant='outline']:hover {
-  background: var(--accent);
-  color: var(--accent-foreground);
-}
-.tk-btn[data-variant='ghost'] {
-  background: transparent;
-  color: var(--foreground);
-}
-.tk-btn[data-variant='ghost']:hover {
-  background: var(--accent);
-  color: var(--accent-foreground);
-}
-.tk-btn[data-variant='destructive'] {
-  background: var(--destructive);
-  color: var(--destructive-foreground);
-}
-.tk-btn[data-variant='destructive']:hover {
-  opacity: 0.9;
-}
-.tk-btn:disabled {
-  opacity: 0.5;
-  cursor: default;
-  pointer-events: none;
-}
-.tk-btn-icon {
-  width: 2.25rem;
-  padding: 0;
-  flex: none;
-}
-.tk-btn-sm {
-  height: 2rem;
-  padding: 0 0.75rem;
-  font-size: 0.8125rem;
-}
 
 /* ---------- 抽屉(新建/编辑) ---------- */
 .tk-overlay-drawer {
@@ -415,18 +22,6 @@
   display: flex;
   flex-direction: column;
   box-shadow: -8px 0 32px rgb(0 0 0 / 0.15);
-}
-.tk-drawer-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--border);
-}
-.tk-drawer-head h2 {
-  font-size: 1rem;
-  font-weight: 600;
-  font-family: var(--font-heading-base, inherit);
 }
 .tk-drawer-body {
   flex: 1;
@@ -471,6 +66,9 @@
   font-size: 0.8125rem;
   color: var(--destructive);
 }
+.tk-placeholder {
+  color: var(--muted-foreground);
+}
 
 /* ---------- 单选(抽屉内) ---------- */
 .tk-radio {
@@ -479,7 +77,7 @@
   gap: 0.5rem;
   width: 100%;
   padding: 0.375rem 0.5rem;
-  border-radius: 0.375rem;
+  border-radius: calc(var(--radius, 0.5rem) * 0.75);
   font-size: 0.875rem;
   cursor: pointer;
 }
@@ -507,7 +105,7 @@
   background: var(--primary);
 }
 
-/* ---------- 弹层(抽屉;居中确认弹窗已迁移公共 App.ui.dialog) ---------- */
+/* ---------- 弹层(抽屉遮罩;居中确认弹窗已迁移公共 App.ui.dialog) ---------- */
 .tk-overlay {
   position: fixed;
   inset: 0;
@@ -522,7 +120,7 @@
   display: flex;
   gap: 0.75rem;
   border: 1px solid var(--border);
-  border-radius: 0.375rem;
+  border-radius: calc(var(--radius, 0.5rem) * 0.75);
   background: var(--muted);
   padding: 0.75rem;
   color: var(--muted-foreground);
@@ -539,20 +137,4 @@
 .tk-file-hint {
   font-size: 0.8125rem;
   color: var(--muted-foreground);
-}
-.tk-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem 1rem;
-  color: var(--muted-foreground);
-  font-size: 0.875rem;
-}
-
-/* ---------- 行菜单(复用 App.ui 下拉) ---------- */
-[data-dropdown][data-task-row-menu] + [data-dropdown-content] {
-  min-width: 11rem;
-}
-.tk-indeterminate {
-  position: relative;
 }

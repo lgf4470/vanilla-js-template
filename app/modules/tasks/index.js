@@ -1,11 +1,9 @@
 /* ============================================================
  * tasks 模块 — 实现(懒加载,首次访问 #/tasks 时下载)
  * 复刻参考项目 shadcn-admin 的 Tasks 页(数据表格):
- * - 模糊搜索(标题/ID) + 状态/优先级 分面过滤器(可搜索选项)
- * - 字段显示控制下拉(View) + 列排序(升/降/隐藏)
- * - 行选择(全选/反选) + 悬浮批量操作栏 + 分页(页码省略号)
- * - 行操作菜单(编辑/标签子菜单/删除) + 新建/编辑抽屉 + 导入弹窗
- * - 多选删除需输入 DELETE 确认;轻提示用 App.ui.toast
+ * - 表格本体(搜索/过滤/排序/选择/批量/分页)已提取为公共组件
+ *   App.ui.dataTable(见 app/components/ui/data-table.js)
+ * - 本模块只保留业务:任务数据、行操作菜单、新建/编辑抽屉、导入/删除确认弹窗
  * 零依赖自研,数据为固定种子生成的 100 条任务。
  * ============================================================ */
 (function () {
@@ -153,88 +151,6 @@
     });
   }
 
-  /* ---------- 表格状态 ---------- */
-  var state = {
-    search: '',
-    filterStatus: [], // 选中值数组
-    filterPriority: [],
-    filterSearch: { status: '', priority: '' }, // 过滤器弹层内的搜索词
-    sort: { key: '', dir: '' },
-    page: 1,
-    pageSize: 10,
-    selection: {}, // id → true
-    visibility: { title: true, status: true, priority: true },
-    filterVisibility: { status: true, priority: true }, // 过滤下拉控制工具栏过滤器显隐
-    dialog: null, // create | update | import | delete | bulk-delete
-    currentRow: null,
-  };
-
-  function filteredTasks() {
-    var q = state.search.trim().toLowerCase();
-    var rows = TASKS.filter(function (t) {
-      if (q && t.id.toLowerCase().indexOf(q) === -1 && t.title.toLowerCase().indexOf(q) === -1) {
-        return false;
-      }
-      if (state.filterStatus.length && state.filterStatus.indexOf(t.status) === -1) return false;
-      if (state.filterPriority.length && state.filterPriority.indexOf(t.priority) === -1)
-        return false;
-      return true;
-    });
-    if (state.sort.key) {
-      var dir = state.sort.dir === 'desc' ? -1 : 1;
-      rows = rows.slice().sort(function (a, b) {
-        var av = String(a[state.sort.key]).toLowerCase();
-        var bv = String(b[state.sort.key]).toLowerCase();
-        return av < bv ? -dir : av > bv ? dir : 0;
-      });
-    }
-    return rows;
-  }
-
-  function pageCount() {
-    return Math.max(1, Math.ceil(filteredTasks().length / state.pageSize));
-  }
-
-  function pageTasks() {
-    var rows = filteredTasks();
-    var start = (state.page - 1) * state.pageSize;
-    return rows.slice(start, start + state.pageSize);
-  }
-
-  function selectedCount() {
-    return Object.keys(state.selection).filter(function (id) {
-      return (
-        state.selection[id] &&
-        TASKS.some(function (t) {
-          return t.id === id;
-        })
-      );
-    }).length;
-  }
-
-  /* ---------- 页码省略号(复刻参考实现) ---------- */
-  function pageNumbers(current, total) {
-    var max = 5;
-    var out = [];
-    if (total <= max) {
-      for (var i = 1; i <= total; i++) out.push(i);
-    } else {
-      out.push(1);
-      if (current <= 3) {
-        for (var j = 2; j <= 4; j++) out.push(j);
-        out.push('...', total);
-      } else if (current >= total - 2) {
-        out.push('...');
-        for (var k = total - 3; k <= total; k++) out.push(k);
-      } else {
-        out.push('...');
-        for (var m = current - 1; m <= current + 1; m++) out.push(m);
-        out.push('...', total);
-      }
-    }
-    return out;
-  }
-
   /* ---------- 转义 ---------- */
   function esc(v) {
     return String(v == null ? '' : v)
@@ -244,304 +160,7 @@
       .replace(/>/g, '&gt;');
   }
 
-  /* ---------- 渲染:工具栏 ---------- */
-  function sortBtn(t, key, label) {
-    var s = state.sort;
-    var arrow = s.key === key ? (s.dir === 'asc' ? 'arrow-up' : 'arrow-down') : 'chevrons-up-down';
-    // 排序菜单项:默认 | 升序 | 降序 | 隐藏(选中项带勾)
-    var opt = function (value, iconName, optLabel, active) {
-      return (
-        '<button type="button" data-task-sort-opt="' +
-        value +
-        '" data-key="' +
-        key +
-        '" class="' +
-        App.ui.dropdownItemClass() +
-        '">' +
-        icon().iconSvg(iconName, { class: 'size-3.5 text-muted-foreground/70' }) +
-        optLabel +
-        (active ? icon().iconSvg('check', { class: 'ms-auto size-4' }) : '') +
-        '</button>'
-      );
-    };
-    var noneActive = !(s.key === key);
-    return (
-      '<div class="relative" data-dropdown>' +
-      '<button type="button" data-dropdown-trigger data-slot="button" data-task-sort="' +
-      key +
-      '" class="' +
-      App.ui.buttonClass('ghost', 'sm', 'h-8 px-2 font-semibold!') +
-      '">' +
-      '<span>' +
-      label +
-      '</span>' +
-      icon().iconSvg(arrow, { class: 'size-3.5' }) +
-      '</button>' +
-      '<div data-dropdown-menu class="' +
-      App.ui.dropdownContentClass('min-w-44') +
-      '">' +
-      opt('default', 'rotate-ccw', t('tasks.sort.default'), noneActive) +
-      opt('asc', 'arrow-up', t('tasks.sort.asc'), s.key === key && s.dir === 'asc') +
-      opt('desc', 'arrow-down', t('tasks.sort.desc'), s.key === key && s.dir === 'desc') +
-      App.ui.dropdownSeparator() +
-      '<button type="button" data-task-hide-col data-key="' +
-      key +
-      '" class="' +
-      App.ui.dropdownItemClass() +
-      '">' +
-      icon().iconSvg('eye-off', { class: 'size-3.5 text-muted-foreground/70' }) +
-      t('tasks.sort.hide') +
-      '</button>' +
-      '</div></div>'
-    );
-  }
-
-  function filterBtn(t, kind, title, options) {
-    var sel = kind === 'status' ? state.filterStatus : state.filterPriority;
-    var optSearch = kind === 'status' ? state.filterSearch.status : state.filterSearch.priority;
-    var visible = options.filter(function (o) {
-      return o.label.toLowerCase().indexOf(optSearch.toLowerCase()) !== -1;
-    });
-    var badges = '';
-    if (sel.length) {
-      badges =
-        '<span class="mx-2 h-4 w-px bg-border"></span>' +
-        sel
-          .map(function (v) {
-            var o = byValue(options, v);
-            return o
-              ? '<span class="hidden rounded-sm bg-secondary px-1.5 text-xs font-normal text-secondary-foreground lg:inline-block">' +
-                  o.label +
-                  '</span>'
-              : '';
-          })
-          .join('') +
-        (sel.length > 2
-          ? '<span class="rounded-sm bg-secondary px-1.5 text-xs font-normal text-secondary-foreground">' +
-            sel.length +
-            ' selected</span>'
-          : '');
-    }
-    return (
-      '<div class="relative" data-dropdown>' +
-      '<button type="button" data-dropdown-trigger data-slot="button" data-task-filter="' +
-      kind +
-      '" class="' +
-      App.ui.buttonClass('outline', 'sm', 'h-8 border-dashed') +
-      '">' +
-      icon().iconSvg('circle-plus', { class: 'size-4' }) +
-      title +
-      badges +
-      '</button>' +
-      '<div data-dropdown-menu class="' +
-      App.ui.dropdownContentClass('w-56') +
-      '">' +
-      App.ui.searchInput.html({
-        placeholder: title,
-        value: optSearch,
-        attrs: 'data-task-filter-search="' + kind + '"',
-        class: 'tk-filter-search-wrap',
-      }) +
-      '<div class="tk-filter-list">' +
-      visible
-        .map(function (o) {
-          var isSel = sel.indexOf(o.value) !== -1;
-          return (
-            '<button type="button" data-task-filter-opt="' +
-            kind +
-            '" data-value="' +
-            o.value +
-            '" class="' +
-            App.ui.dropdownItemClass('') +
-            '">' +
-            '<span class="tk-check' +
-            (isSel ? ' is-checked' : '') +
-            '">' +
-            icon().iconSvg('check', { class: 'size-3' }) +
-            '</span>' +
-            (o.icon
-              ? '<span class="text-muted-foreground">' +
-                icon().iconSvg(o.icon, { class: 'size-4' }) +
-                '</span>'
-              : '') +
-            '<span>' +
-            o.label +
-            '</span>' +
-            '<span class="ms-auto font-mono text-xs">' +
-            filteredTasks().filter(function (x) {
-              return x[kind] === o.value;
-            }).length +
-            '</span>' +
-            '</button>'
-          );
-        })
-        .join('') +
-      (visible.length
-        ? ''
-        : '<div class="px-2 py-6 text-center text-sm text-muted-foreground">No results found.</div>') +
-      '</div>' +
-      (sel.length
-        ? App.ui.dropdownSeparator() +
-          '<button type="button" data-task-filter-clear="' +
-          kind +
-          '" class="' +
-          App.ui.dropdownItemClass('justify-center! text-center') +
-          '">Clear filters</button>'
-        : '') +
-      '</div></div>'
-    );
-  }
-
-  function viewBtn(t) {
-    var cols = [
-      { key: 'title', label: t('tasks.col.title') },
-      { key: 'status', label: t('tasks.col.status') },
-      { key: 'priority', label: t('tasks.col.priority') },
-    ];
-    return (
-      '<div class="relative" data-dropdown>' +
-      '<button type="button" data-dropdown-trigger data-task-view data-slot="button" class="' +
-      App.ui.buttonClass('outline', 'sm', 'ms-auto hidden h-8 lg:inline-flex') +
-      '">' +
-      icon().iconSvg('sliders-horizontal', { class: 'size-4' }) +
-      t('tasks.view') +
-      '</button>' +
-      '<div data-dropdown-menu class="' +
-      App.ui.dropdownContentClass('w-48') +
-      '">' +
-      '<div class="' +
-      App.ui.dropdownLabelClass('') +
-      '">' +
-      t('tasks.toggleCols') +
-      '</div>' +
-      App.ui.dropdownSeparator() +
-      cols
-        .map(function (c) {
-          var vis = state.visibility[c.key];
-          return (
-            '<button type="button" data-task-view-col="' +
-            c.key +
-            '" class="' +
-            App.ui.dropdownItemClass('') +
-            '">' +
-            '<span class="tk-check' +
-            (vis ? ' is-checked' : '') +
-            '">' +
-            icon().iconSvg('check', { class: 'size-3' }) +
-            '</span>' +
-            '<span class="capitalize">' +
-            c.label +
-            '</span>' +
-            '</button>'
-          );
-        })
-        .join('') +
-      '</div></div>'
-    );
-  }
-
-  function filterToggleBtn(t) {
-    var kinds = [
-      { key: 'status', label: t('tasks.filter.status') },
-      { key: 'priority', label: t('tasks.filter.priority') },
-    ];
-    return (
-      '<div class="relative" data-dropdown>' +
-      '<button type="button" data-dropdown-trigger data-task-filter-toggle data-slot="button" class="' +
-      App.ui.buttonClass('outline', 'sm', 'hidden h-8 lg:inline-flex') +
-      '">' +
-      icon().iconSvg('list-filter', { class: 'size-4' }) +
-      t('tasks.filterToggle') +
-      '</button>' +
-      '<div data-dropdown-menu class="' +
-      App.ui.dropdownContentClass('w-48') +
-      '">' +
-      '<div class="' +
-      App.ui.dropdownLabelClass('') +
-      '">' +
-      t('tasks.toggleFilters') +
-      '</div>' +
-      App.ui.dropdownSeparator() +
-      kinds
-        .map(function (k) {
-          var vis = state.filterVisibility[k.key];
-          return (
-            '<button type="button" data-task-filter-toggle-opt="' +
-            k.key +
-            '" class="' +
-            App.ui.dropdownItemClass('') +
-            '">' +
-            '<span class="tk-check' +
-            (vis ? ' is-checked' : '') +
-            '">' +
-            icon().iconSvg('check', { class: 'size-3' }) +
-            '</span>' +
-            '<span class="capitalize">' +
-            k.label +
-            '</span>' +
-            '</button>'
-          );
-        })
-        .join('') +
-      '</div></div>'
-    );
-  }
-
-  function toolbarHtml(t) {
-    var isFiltered =
-      state.search !== '' || state.filterStatus.length || state.filterPriority.length;
-    return (
-      '<div class="flex items-center justify-between">' +
-      '<div class="flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2">' +
-      '<div class="tk-search-input-wrap">' +
-      App.ui.searchInput.html({
-        placeholder: t('tasks.searchPlaceholder'),
-        value: state.search,
-        attrs: 'data-task-search',
-        clearLabel: t('tasks.searchPlaceholder'),
-      }) +
-      '</div>' +
-      '<div class="flex gap-x-2">' +
-      (state.filterVisibility.status
-        ? filterBtn(t, 'status', t('tasks.filter.status'), STATUSES)
-        : '') +
-      (state.filterVisibility.priority
-        ? filterBtn(t, 'priority', t('tasks.filter.priority'), PRIORITIES)
-        : '') +
-      '</div>' +
-      (isFiltered
-        ? '<button type="button" data-task-reset data-slot="button" class="' +
-          App.ui.buttonClass('ghost', 'sm', 'h-8 px-2 lg:px-3') +
-          '">' +
-          t('tasks.reset') +
-          icon().iconSvg('x', { class: 'ms-2 size-4' }) +
-          '</button>'
-        : '') +
-      '</div>' +
-      viewBtn(t) +
-      filterToggleBtn(t) +
-      '</div>'
-    );
-  }
-
-  /* ---------- 渲染:表格 ---------- */
-  function checkboxHtml(checked, indeterminate, attrs) {
-    return (
-      '<span class="tk-check' +
-      (checked || indeterminate ? ' is-checked' : '') +
-      (indeterminate ? ' is-indeterminate' : '') +
-      '" data-role="check">' +
-      (indeterminate
-        ? '<span class="tk-indeterminate"></span>'
-        : icon().iconSvg('check', { class: 'size-3' })) +
-      '</span>' +
-      '<input type="checkbox" ' +
-      attrs +
-      (checked ? ' checked' : '') +
-      ' class="tk-check-input" />'
-    );
-  }
-
+  /* ---------- 单元格渲染 ---------- */
   function labelBadge(value) {
     var l = byValue(LABELS, value);
     return l
@@ -573,6 +192,7 @@
     );
   }
 
+  /* ---------- 行操作菜单(业务部分,事件仍由本模块委托) ---------- */
   function rowActionsHtml(t, row) {
     var sub = LABELS.map(function (l) {
       return (
@@ -648,299 +268,164 @@
     );
   }
 
-  function tableHtml(t) {
-    var rows = pageTasks();
-    var allPageSelected =
-      rows.length > 0 &&
-      rows.every(function (r) {
-        return state.selection[r.id];
-      });
-    var somePageSelected = rows.some(function (r) {
-      return state.selection[r.id];
-    });
-    var vis = state.visibility;
-    var showTitle = vis.title;
-    var showStatus = vis.status;
-    var showPriority = vis.priority;
-
-    var bodyHtml;
-    if (rows.length === 0) {
-      bodyHtml =
-        '<tr><td colspan="' +
-        (4 + (showTitle ? 1 : 0) + (showStatus ? 1 : 0) + (showPriority ? 1 : 0)) +
-        '" class="h-24 text-center text-muted-foreground">No results.</td></tr>';
-    } else {
-      bodyHtml = rows
-        .map(function (r) {
-          var isSel = !!state.selection[r.id];
+  /* ---------- 表格实例(公共组件) ---------- */
+  var table = App.ui.dataTable({
+    id: 'tasks',
+    data: function () {
+      return TASKS;
+    },
+    rowKey: 'id',
+    searchPlaceholder: function (t) {
+      return t('tasks.searchPlaceholder');
+    },
+    searchKeys: ['id', 'title'],
+    columns: [
+      {
+        key: 'id',
+        label: function (t) {
+          return t('tasks.col.task');
+        },
+        sortable: false,
+        hideable: false,
+        cellClass: 'w-20 text-muted-foreground',
+        render: function (r) {
+          return esc(r.id);
+        },
+      },
+      {
+        key: 'title',
+        label: function (t) {
+          return t('tasks.col.title');
+        },
+        render: function (r) {
           return (
-            '<tr class="tk-row' +
-            (isSel ? ' is-selected' : '') +
-            '" data-task-row="' +
-            r.id +
-            '">' +
-            '<td class="tk-td w-12"><label class="tk-checkbox" data-task-check="' +
-            r.id +
-            '">' +
-            checkboxHtml(isSel, false, 'data-task-check="' + r.id + '"') +
-            '</label></td>' +
-            '<td class="tk-td w-20 text-muted-foreground">' +
-            r.id +
-            '</td>' +
-            (showTitle
-              ? '<td class="tk-td ps-4"><div class="flex items-center space-x-2">' +
-                labelBadge(r.label) +
-                '<span class="truncate font-medium">' +
-                esc(r.title) +
-                '</span></div></td>'
-              : '') +
-            (showStatus ? '<td class="tk-td ps-4">' + statusCell(r) + '</td>' : '') +
-            (showPriority ? '<td class="tk-td ps-3">' + priorityCell(r) + '</td>' : '') +
-            '<td class="tk-td">' +
-            rowActionsHtml(t, r) +
-            '</td>' +
-            '</tr>'
+            '<div class="flex items-center space-x-2">' +
+            labelBadge(r.label) +
+            '<span class="truncate font-medium">' +
+            esc(r.title) +
+            '</span></div>'
           );
-        })
-        .join('');
-    }
-
-    return (
-      '<div class="overflow-hidden rounded-md border">' +
-      '<table class="tk-table">' +
-      '<thead><tr class="border-b">' +
-      '<th class="tk-th w-12"><label class="tk-checkbox" data-task-check-all>' +
-      checkboxHtml(allPageSelected, !allPageSelected && somePageSelected, 'data-task-check-all') +
-      '</label></th>' +
-      '<th class="tk-th w-20">' +
-      t('tasks.col.task') +
-      '</th>' +
-      (showTitle
-        ? '<th class="tk-th ps-1">' + sortBtn(t, 'title', t('tasks.col.title')) + '</th>'
-        : '') +
-      (showStatus
-        ? '<th class="tk-th ps-1">' + sortBtn(t, 'status', t('tasks.col.status')) + '</th>'
-        : '') +
-      (showPriority
-        ? '<th class="tk-th ps-1">' + sortBtn(t, 'priority', t('tasks.col.priority')) + '</th>'
-        : '') +
-      '<th class="tk-th"></th>' +
-      '</tr></thead>' +
-      '<tbody>' +
-      bodyHtml +
-      '</tbody>' +
-      '</table></div>'
-    );
-  }
-
-  /* ---------- 渲染:分页 ---------- */
-  function paginationHtml(t) {
-    var current = state.page;
-    var total = pageCount();
-    var nums = pageNumbers(current, total);
-    var btnBase =
-      'inline-flex h-8 min-w-8 items-center justify-center rounded-md border px-2 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50';
-    return (
-      '<div class="tk-pagination">' +
-      '<div class="flex items-center gap-2">' +
-      '<div class="relative" data-dropdown>' +
-      '<button type="button" data-dropdown-trigger data-slot="button" class="' +
-      App.ui.buttonClass('outline', 'sm', 'h-8 w-20') +
-      '">' +
-      '<span>' +
-      state.pageSize +
-      '</span>' +
-      icon().iconSvg('chevrons-up-down', { class: 'size-3.5' }) +
-      '</button>' +
-      '<div data-dropdown-menu class="' +
-      App.ui.dropdownContentClass('min-w-16') +
-      '">' +
-      PAGE_SIZES.map(function (n) {
-        return (
-          '<button type="button" data-task-page-size="' +
-          n +
-          '" class="' +
-          App.ui.dropdownItemClass() +
-          '">' +
-          n +
-          '</button>'
+        },
+      },
+      {
+        key: 'status',
+        label: function (t) {
+          return t('tasks.col.status');
+        },
+        render: function (r) {
+          return statusCell(r);
+        },
+      },
+      {
+        key: 'priority',
+        label: function (t) {
+          return t('tasks.col.priority');
+        },
+        render: function (r) {
+          return priorityCell(r);
+        },
+      },
+    ],
+    filters: [
+      {
+        key: 'status',
+        label: function (t) {
+          return t('tasks.filter.status');
+        },
+        options: STATUSES,
+      },
+      {
+        key: 'priority',
+        label: function (t) {
+          return t('tasks.filter.priority');
+        },
+        options: PRIORITIES,
+      },
+    ],
+    pageSizeOptions: PAGE_SIZES,
+    bulk: {
+      groups: [
+        {
+          action: 'status',
+          label: function (t) {
+            return t('tasks.bulkStatus');
+          },
+          icon: 'circle-arrow-up',
+          options: STATUSES,
+        },
+        {
+          action: 'priority',
+          label: function (t) {
+            return t('tasks.bulkPriority');
+          },
+          icon: 'arrow-up-down',
+          options: PRIORITIES,
+        },
+      ],
+      items: [
+        {
+          action: 'export',
+          label: function (t) {
+            return t('tasks.bulkExport');
+          },
+          icon: 'download',
+        },
+        {
+          action: 'delete',
+          label: function (t) {
+            return t('tasks.bulkDelete');
+          },
+          icon: 'trash-2',
+          variant: 'destructive',
+        },
+      ],
+      onGroup: function (action, value, rows) {
+        rows.forEach(function (r) {
+          mutateRow(r.id, action === 'status' ? { status: value } : { priority: value });
+        });
+        table.clearSelection();
+        App.ui.toast(
+          (action === 'status'
+            ? 'Status updated to "' + (byValue(STATUSES, value) || {}).label + '" for '
+            : 'Priority updated to "' + (byValue(PRIORITIES, value) || {}).label + '" for ') +
+            rows.length +
+            (rows.length > 1 ? ' tasks.' : ' task.'),
+          'default'
         );
-      }).join('') +
-      '</div></div>' +
-      '<p class="hidden text-sm font-medium sm:block">' +
-      t('tasks.rowsPerPage') +
-      '</p>' +
-      '</div>' +
-      '<div class="flex items-center gap-1 sm:space-x-1">' +
-      '<span class="hidden w-28 text-center text-sm font-medium sm:block">' +
-      t('tasks.pageOf', current + ' / ' + total) +
-      '</span>' +
-      '<button type="button" data-task-page="first" class="' +
-      btnBase +
-      '" ' +
-      (current === 1 ? 'disabled' : '') +
-      ' aria-label="' +
-      t('tasks.firstPage') +
-      '">' +
-      icon().iconSvg('chevrons-left', { class: 'size-4' }) +
-      '</button>' +
-      '<button type="button" data-task-page="prev" class="' +
-      btnBase +
-      '" ' +
-      (current === 1 ? 'disabled' : '') +
-      ' aria-label="' +
-      t('tasks.prevPage') +
-      '">' +
-      icon().iconSvg('chevron-left', { class: 'size-4' }) +
-      '</button>' +
-      nums
-        .map(function (n) {
-          if (n === '...') return '<span class="px-1 text-sm text-muted-foreground">...</span>';
-          return (
-            '<button type="button" data-task-page="' +
-            n +
-            '" class="' +
-            btnBase +
-            ' ' +
-            (current === n
-              ? 'border-transparent bg-primary text-primary-foreground hover:bg-primary/80'
-              : 'bg-background hover:bg-muted') +
-            '" aria-label="' +
-            t('tasks.goToPage', n) +
-            '">' +
-            n +
-            '</button>'
+      },
+      onItem: function (action, rows) {
+        if (action === 'export') {
+          table.clearSelection();
+          App.ui.toast(
+            'Exported ' + rows.length + (rows.length > 1 ? ' tasks' : ' task') + ' to CSV.',
+            'default'
           );
-        })
-        .join('') +
-      '<button type="button" data-task-page="next" class="' +
-      btnBase +
-      '" ' +
-      (current >= total ? 'disabled' : '') +
-      ' aria-label="' +
-      t('tasks.nextPage') +
-      '">' +
-      icon().iconSvg('chevron-right', { class: 'size-4' }) +
-      '</button>' +
-      '<button type="button" data-task-page="last" class="' +
-      btnBase +
-      '" ' +
-      (current >= total ? 'disabled' : '') +
-      ' aria-label="' +
-      t('tasks.lastPage') +
-      '">' +
-      icon().iconSvg('chevrons-right', { class: 'size-4' }) +
-      '</button>' +
-      '</div></div>'
-    );
-  }
+        } else if (action === 'delete') {
+          state.dialog = 'bulk-delete';
+          bulkDeleteInput = '';
+          renderDialog();
+        }
+      },
+    },
+    rowActionsHtml: function (row, t) {
+      return rowActionsHtml(t, row);
+    },
+  });
 
-  /* ---------- 渲染:批量操作浮动条 ---------- */
-  function bulkActionsHtml(t) {
-    var count = selectedCount();
-    if (!count) return '';
-    var dd = function (label, iconName, items, action) {
-      return (
-        '<div class="relative" data-dropdown>' +
-        '<button type="button" data-dropdown-trigger data-slot="button" data-tip="' +
-        label +
-        '" aria-label="' +
-        label +
-        '" class="' +
-        App.ui.buttonClass('outline', 'icon', 'size-8 rounded-md!') +
-        '">' +
-        icon().iconSvg(iconName, { class: 'size-4' }) +
-        '</button>' +
-        '<div data-dropdown-menu class="' +
-        App.ui.dropdownContentClass('min-w-40') +
-        '">' +
-        items
-          .map(function (it) {
-            return (
-              '<button type="button" data-task-bulk="' +
-              action +
-              '" data-value="' +
-              it.value +
-              '" class="' +
-              App.ui.dropdownItemClass() +
-              '">' +
-              (it.icon
-                ? '<span class="text-muted-foreground">' +
-                  icon().iconSvg(it.icon, { class: 'size-4' }) +
-                  '</span>'
-                : '') +
-              it.label +
-              '</button>'
-            );
-          })
-          .join('') +
-        '</div></div>'
-      );
-    };
-    return (
-      '<div role="toolbar" class="tk-bulk-bar">' +
-      '<button type="button" data-task-clear-selection data-slot="button" class="' +
-      App.ui.buttonClass('outline', 'icon', 'size-6 rounded-full!') +
-      '" aria-label="' +
-      t('tasks.clearSelection') +
-      '" data-tip="' +
-      t('tasks.clearSelection') +
-      '">' +
-      icon().iconSvg('x', { class: 'size-4' }) +
-      '</button>' +
-      '<span class="mx-1 h-5 w-px bg-border"></span>' +
-      '<div class="flex items-center gap-1 text-sm">' +
-      '<span class="rounded-lg bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">' +
-      count +
-      '</span>' +
-      '<span class="hidden sm:inline">' +
-      t(count > 1 ? 'tasks.tasksSelected' : 'tasks.taskSelected', count) +
-      '</span>' +
-      '</div>' +
-      '<span class="mx-1 h-5 w-px bg-border"></span>' +
-      dd(t('tasks.bulkStatus'), 'circle-arrow-up', STATUSES, 'status') +
-      dd(t('tasks.bulkPriority'), 'arrow-up-down', PRIORITIES, 'priority') +
-      '<button type="button" data-task-bulk-export data-slot="button" class="' +
-      App.ui.buttonClass('outline', 'icon', 'size-8 rounded-md!') +
-      '" data-tip="' +
-      t('tasks.bulkExport') +
-      '" aria-label="' +
-      t('tasks.bulkExport') +
-      '">' +
-      icon().iconSvg('download', { class: 'size-4' }) +
-      '</button>' +
-      '<button type="button" data-task-bulk-delete data-slot="button" class="' +
-      App.ui.buttonClass('destructive', 'icon', 'size-8 rounded-md!') +
-      '" data-tip="' +
-      t('tasks.bulkDelete') +
-      '" aria-label="' +
-      t('tasks.bulkDelete') +
-      '">' +
-      icon().iconSvg('trash-2', { class: 'size-4' }) +
-      '</button>' +
-      '</div>'
-    );
-  }
+  /* ---------- 弹层状态 ---------- */
+  var state = {
+    dialog: null, // create | update | import | delete | bulk-delete
+    currentRow: null,
+  };
 
   /* ---------- 渲染:主区域 ---------- */
-  function tableRegionHtml(t) {
-    return (
-      '<div data-task-region class="flex flex-1 flex-col gap-4">' +
-      toolbarHtml(t) +
-      tableHtml(t) +
-      paginationHtml(t) +
-      bulkActionsHtml(t) +
-      '</div>'
-    );
-  }
-
   function render(route, ctx) {
     var t = ctx.t;
     return (
       '<div class="mx-auto flex max-w-6xl flex-1 flex-col gap-4 sm:gap-6">' +
       '<div class="flex flex-wrap items-end justify-between gap-2">' +
       '<div>' +
-      '<h2 class="text-2xl font-bold tracking-tight">' +
+      '<h2 class="text-2xl font-bold tracking-tight font-heading">' +
       t('tasks.title') +
       '</h2>' +
       '<p class="text-muted-foreground">' +
@@ -965,7 +450,9 @@
       icon().iconSvg('plus', { class: 'size-4' }) +
       '</button>' +
       '</div></div>' +
-      tableRegionHtml(t) +
+      '<div class="flex flex-1 flex-col gap-4" data-dt-id="tasks">' +
+      table.render(t) +
+      '</div>' +
       '<div data-tasks-dialog-root></div>' +
       '</div>'
     );
@@ -1155,7 +642,7 @@
       };
     }
     if (state.dialog === 'bulk-delete') {
-      var n = selectedCount();
+      var n = table.selectedCount();
       return {
         head:
           '<span class="flex size-8 items-center justify-center rounded-full bg-destructive/10 text-destructive">' +
@@ -1255,22 +742,7 @@
     App.ui.dialog({ head: dlg.head, body: dlg.body, foot: dlg.foot });
   }
 
-  /* ---------- 状态更新与重绘 ---------- */
-  function rerender() {
-    var region = document.querySelector('[data-task-region]');
-    if (region) {
-      var locale = App.getShellContext().settings.locale;
-      var t = App.i18n.makeT(locale, window.__moduleI18n && window.__moduleI18n.tasks);
-      region.outerHTML = tableRegionHtml(t);
-    }
-  }
-
-  function setPage(p) {
-    var total = pageCount();
-    state.page = Math.max(1, Math.min(total, p));
-    rerender();
-  }
-
+  /* ---------- 数据变更 ---------- */
   function mutateRow(id, patch) {
     for (var i = 0; i < TASKS.length; i++) {
       if (TASKS[i].id === id) {
@@ -1280,12 +752,11 @@
     }
   }
 
-  /* ---------- 事件委托 ---------- */
+  /* ---------- 事件委托(仅保留业务部分;表格交互由 data-table 组件托管) ---------- */
   document.addEventListener('click', function (e) {
     var target = e.target;
     if (!target || !target.closest) return;
 
-    var inRegion = !!target.closest('[data-task-region]');
     var inDialog = !!target.closest('[data-tasks-dialog-root]');
 
     // 打开弹层
@@ -1322,166 +793,7 @@
       mutateRow(rowLabel.getAttribute('data-task-row-label'), {
         label: rowLabel.getAttribute('data-value'),
       });
-      rerender();
-      return;
-    }
-    // 行选择
-    var rowCheck = target.closest('[data-task-check]');
-    if (rowCheck) {
-      var cid = rowCheck.getAttribute('data-task-check');
-      if (cid) {
-        state.selection[cid] = !state.selection[cid];
-        rerender();
-        return;
-      }
-    }
-    var checkAll = target.closest('[data-task-check-all]');
-    if (checkAll) {
-      var rows = pageTasks();
-      var all =
-        rows.length > 0 &&
-        rows.every(function (r) {
-          return state.selection[r.id];
-        });
-      rows.forEach(function (r) {
-        if (all) delete state.selection[r.id];
-        else state.selection[r.id] = true;
-      });
-      rerender();
-      return;
-    }
-    // 排序
-    var sortOpt = target.closest('[data-task-sort-opt]');
-    if (sortOpt) {
-      var key = sortOpt.getAttribute('data-key');
-      var dir = sortOpt.getAttribute('data-task-sort-opt');
-      // 默认:清空该列排序,回到初始顺序(无需刷新页面)
-      state.sort = dir === 'default' ? { key: '', dir: '' } : { key: key, dir: dir };
-      state.page = 1;
-      rerender();
-      return;
-    }
-    var hideCol = target.closest('[data-task-hide-col]');
-    if (hideCol) {
-      var hk = hideCol.getAttribute('data-key');
-      state.visibility[hk] = false;
-      rerender();
-      return;
-    }
-    // 字段显隐
-    var viewCol = target.closest('[data-task-view-col]');
-    if (viewCol) {
-      var vk = viewCol.getAttribute('data-task-view-col');
-      state.visibility[vk] = !state.visibility[vk];
-      rerender();
-      return;
-    }
-    // 分面过滤器
-    var filterOpt = target.closest('[data-task-filter-opt]');
-    if (filterOpt) {
-      var fk = filterOpt.getAttribute('data-task-filter-opt');
-      var fv = filterOpt.getAttribute('data-value');
-      var arr = fk === 'status' ? state.filterStatus : state.filterPriority;
-      var idx = arr.indexOf(fv);
-      if (idx === -1) arr.push(fv);
-      else arr.splice(idx, 1);
-      state.page = 1;
-      rerender();
-      return;
-    }
-    // 过滤下拉:切换工具栏过滤器的显隐
-    var filterToggleOpt = target.closest('[data-task-filter-toggle-opt]');
-    if (filterToggleOpt) {
-      var fvk = filterToggleOpt.getAttribute('data-task-filter-toggle-opt');
-      state.filterVisibility[fvk] = !state.filterVisibility[fvk];
-      rerender();
-      return;
-    }
-    var filterClear = target.closest('[data-task-filter-clear]');
-    if (filterClear) {
-      var ck = filterClear.getAttribute('data-task-filter-clear');
-      if (ck === 'status') state.filterStatus = [];
-      else state.filterPriority = [];
-      state.page = 1;
-      rerender();
-      return;
-    }
-    // 重置
-    var reset = target.closest('[data-task-reset]');
-    if (reset) {
-      state.search = '';
-      state.filterStatus = [];
-      state.filterPriority = [];
-      state.filterSearch = { status: '', priority: '' };
-      state.page = 1;
-      rerender();
-      return;
-    }
-    // 分页
-    var pageBtn = target.closest('[data-task-page]');
-    if (pageBtn) {
-      var cmd = pageBtn.getAttribute('data-task-page');
-      if (cmd === 'first') setPage(1);
-      else if (cmd === 'prev') setPage(state.page - 1);
-      else if (cmd === 'next') setPage(state.page + 1);
-      else if (cmd === 'last') setPage(pageCount());
-      else setPage(parseInt(cmd, 10));
-      return;
-    }
-    var pageSize = target.closest('[data-task-page-size]');
-    if (pageSize) {
-      state.pageSize = parseInt(pageSize.getAttribute('data-task-page-size'), 10);
-      state.page = 1;
-      rerender();
-      return;
-    }
-    // 批量操作
-    var clearSel = target.closest('[data-task-clear-selection]');
-    if (clearSel) {
-      state.selection = {};
-      rerender();
-      return;
-    }
-    var bulk = target.closest('[data-task-bulk]');
-    if (bulk) {
-      var bk = bulk.getAttribute('data-task-bulk');
-      var bv = bulk.getAttribute('data-value');
-      var ids = Object.keys(state.selection).filter(function (id) {
-        return state.selection[id];
-      });
-      ids.forEach(function (id) {
-        mutateRow(id, bk === 'status' ? { status: bv } : { priority: bv });
-      });
-      state.selection = {};
-      rerender();
-      App.ui.toast(
-        (bk === 'status'
-          ? 'Status updated to "' + (byValue(STATUSES, bv) || {}).label + '" for '
-          : 'Priority updated to "' + (byValue(PRIORITIES, bv) || {}).label + '" for ') +
-          ids.length +
-          (ids.length > 1 ? ' tasks.' : ' task.'),
-        'default'
-      );
-      return;
-    }
-    var bulkExport = target.closest('[data-task-bulk-export]');
-    if (bulkExport) {
-      var ids2 = Object.keys(state.selection).filter(function (id) {
-        return state.selection[id];
-      });
-      state.selection = {};
-      rerender();
-      App.ui.toast(
-        'Exported ' + ids2.length + (ids2.length > 1 ? ' tasks' : ' task') + ' to CSV.',
-        'default'
-      );
-      return;
-    }
-    var bulkDelete = target.closest('[data-task-bulk-delete]');
-    if (bulkDelete) {
-      state.dialog = 'bulk-delete';
-      bulkDeleteInput = '';
-      renderDialog();
+      table.refresh();
       return;
     }
     // 抽屉保存
@@ -1510,11 +822,10 @@
       TASKS = TASKS.filter(function (x) {
         return x.id !== delRow2.id;
       });
-      state.selection = {};
       state.dialog = null;
       state.currentRow = null;
       renderDialog();
-      rerender();
+      table.clearSelection();
       App.ui.toast('The task ' + delRow2.id + ' has been deleted.', 'default');
       return;
     }
@@ -1524,17 +835,18 @@
         App.ui.toast('Please type "DELETE" to confirm.', 'error');
         return;
       }
-      var ids3 = Object.keys(state.selection).filter(function (id) {
-        return state.selection[id];
+      var rows3 = table.selected();
+      var ids3 = rows3.map(function (r) {
+        return r.id;
       });
       TASKS = TASKS.filter(function (x) {
-        return !state.selection[x.id];
+        return ids3.indexOf(x.id) === -1;
       });
-      state.selection = {};
       state.dialog = null;
+      state.currentRow = null;
       renderDialog();
-      rerender();
-      App.ui.toast('Deleted ' + ids3.length + (ids3.length > 1 ? ' tasks.' : ' task.'), 'default');
+      table.clearSelection();
+      App.ui.toast('Deleted ' + rows3.length + (rows3.length > 1 ? ' tasks.' : ' task.'), 'default');
       return;
     }
     var confirmImport = target.closest('[data-task-confirm-import]');
@@ -1561,72 +873,12 @@
       renderDialog();
       return;
     }
-    // 行点击(非交互区)不处理
-    if (!inRegion && !inDialog) return;
   });
 
-  /* ---------- 输入事件委托(搜索/过滤搜索/草稿/确认词) ---------- */
+  /* ---------- 输入事件委托(草稿/确认词;搜索与过滤搜索由组件托管) ---------- */
   document.addEventListener('input', function (e) {
     var target = e.target;
     if (!target || !target.closest) return;
-    if (target.closest('[data-task-search]')) {
-      state.search = target.value;
-      state.page = 1;
-      rerender();
-      return;
-    }
-    if (target.closest('[data-task-filter-search]')) {
-      var fk = target.getAttribute('data-task-filter-search');
-      if (fk === 'status') state.filterSearch.status = target.value;
-      else state.filterSearch.priority = target.value;
-      // 就地重绘过滤器列表
-      var menu = target.closest('[data-dropdown-menu]');
-      var list = menu ? menu.querySelector('.tk-filter-list') : null;
-      if (list) {
-        var options = fk === 'status' ? STATUSES : PRIORITIES;
-        var q = target.value.toLowerCase();
-        var visible = options.filter(function (o) {
-          return o.label.toLowerCase().indexOf(q) !== -1;
-        });
-        list.innerHTML =
-          visible
-            .map(function (o) {
-              var arr = fk === 'status' ? state.filterStatus : state.filterPriority;
-              var isSel = arr.indexOf(o.value) !== -1;
-              return (
-                '<button type="button" data-task-filter-opt="' +
-                fk +
-                '" data-value="' +
-                o.value +
-                '" class="' +
-                App.ui.dropdownItemClass('') +
-                '">' +
-                '<span class="tk-check' +
-                (isSel ? ' is-checked' : '') +
-                '">' +
-                icon().iconSvg('check', { class: 'size-3' }) +
-                '</span>' +
-                (o.icon
-                  ? '<span class="text-muted-foreground">' +
-                    icon().iconSvg(o.icon, { class: 'size-4' }) +
-                    '</span>'
-                  : '') +
-                '<span>' +
-                o.label +
-                '</span>' +
-                '<span class="ms-auto font-mono text-xs">' +
-                filteredTasks().filter(function (x) {
-                  return x[fk] === o.value;
-                }).length +
-                '</span>' +
-                '</button>'
-              );
-            })
-            .join('') ||
-          '<div class="px-2 py-6 text-center text-sm text-muted-foreground">No results found.</div>';
-      }
-      return;
-    }
     if (target.closest('[data-draft-title]')) {
       draft.title = target.value;
       return;
@@ -1688,13 +940,13 @@
         label: draft.label,
         priority: draft.priority,
       });
-      state.page = 1;
+      table.setPage(1);
       App.ui.toast('Task ' + nid + ' has been created.', 'default');
     }
     state.dialog = null;
     state.currentRow = null;
     renderDialog();
-    rerender();
+    table.refresh();
   }
 
   App.defineModule({ id: 'tasks', render: render });

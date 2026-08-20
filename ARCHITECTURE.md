@@ -60,8 +60,8 @@ critical.css
   → logger / i18n / icons-data / icons / api / auth / settings / ui
   → 若未登录：渲染 auth 登录卡片
   → 若已登录：tooltip / search / json-tree / color-picker / group-tree /
-                tag-picker / avatar / shell / app / workspace / profile /
-                interactions
+                tag-picker / data-table / avatar / shell / app / workspace /
+                profile / interactions
   → app/modules/registry.js
   → App.start() → Shell → 当前路由模块
 ```
