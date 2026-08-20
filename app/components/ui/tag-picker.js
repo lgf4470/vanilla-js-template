@@ -316,23 +316,15 @@
   function tagMenuItemsHtml(inst, t) {
     var L = inst.labels();
     function item(act, label, iconName, danger) {
-      return (
-        '<button type="button" class="tp-mi' +
-        (danger ? ' is-danger' : '') +
-        '" data-tp-act="' +
-        act +
-        '" data-id="' +
-        escAttr(t.id) +
-        '">' +
-        ic(iconName) +
-        esc(label) +
-        '</button>'
-      );
+      return App.ui.contextMenu.item(iconName, label, {
+        attrs: 'data-tp-act="' + act + '" data-id="' + escAttr(t.id) + '"',
+        danger: !!danger,
+      });
     }
     return (
       item('rename', L.rename || '重命名', 'pencil') +
       item('color', L.color || '设置颜色', 'palette') +
-      '<div class="tp-msep"></div>' +
+      App.ui.contextMenu.separator() +
       item('del', L.delete || '删除', 'trash-2', true)
     );
   }
@@ -874,45 +866,36 @@
     }
   });
 
-  // 右键/⋯ 菜单浮层(统一 body 级 fixed,避免被侧栏遮挡)
+  // 右键/⋯ 菜单浮层(公共 App.ui.contextMenu,body 级 fixed)
   var ctxPopup = null;
   var ctxTrigger = null;
   function showCtx(inst, tag, x, y, anchorEl) {
     hideCtx();
-    ctxPopup = document.createElement('div');
-    ctxPopup.className = 'tp-ctxpop';
-    ctxPopup.innerHTML = tagMenuItemsHtml(inst, tag);
+    ctxPopup = App.ui.contextMenu.open(tagMenuItemsHtml(inst, tag), {
+      anchorEl: anchorEl,
+      x: x,
+      y: y,
+      className: 'tp-ctxpop',
+      keepOpenOn: '[data-tp-more]',
+      onClose: function () {
+        // 外部点击 / Esc / 新菜单打开时:清理实例引用与触发按钮状态
+        ctxPopup = null;
+        if (ctxTrigger) {
+          ctxTrigger.removeAttribute('aria-expanded');
+          ctxTrigger = null;
+        }
+      },
+    });
     // 浮层挂在 body 下(不在 [data-tp] 内),把实例引用挂到元素上,
     // 供 document 级 click 委托解析,否则菜单项点击不生效。
     ctxPopup._tpInst = inst;
-    document.body.appendChild(ctxPopup);
-    var w = ctxPopup.offsetWidth || 160;
-    var h = ctxPopup.offsetHeight || 160;
-    var left, top;
-    if (anchorEl && anchorEl.getBoundingClientRect) {
-      var rect = anchorEl.getBoundingClientRect();
-      left = rect.right - w;
-      top = rect.bottom + 4;
-      if (left < 4) left = 4;
-      if (top + h > window.innerHeight - 4) top = Math.max(4, rect.top - h - 4);
-    } else {
-      left = Math.max(4, x || 0);
-      top = Math.max(4, y || 0);
-    }
-    ctxPopup.style.left = left + 'px';
-    ctxPopup.style.top = top + 'px';
     if (anchorEl) {
       ctxTrigger = anchorEl;
       anchorEl.setAttribute('aria-expanded', 'true');
     }
   }
   function hideCtx() {
-    if (ctxTrigger) {
-      ctxTrigger.removeAttribute('aria-expanded');
-      ctxTrigger = null;
-    }
-    if (ctxPopup && ctxPopup.parentNode) ctxPopup.parentNode.removeChild(ctxPopup);
-    ctxPopup = null;
+    App.ui.contextMenu.close(); // onClose 统一清理 ctxPopup / ctxTrigger
   }
   document.addEventListener('contextmenu', function (e) {
     var t = e.target;
@@ -926,10 +909,6 @@
     if (!tag) return;
     showCtx(inst, tag, e.clientX, e.clientY);
   });
-  document.addEventListener('click', function (e) {
-    if (ctxPopup && e.target && (!e.target.closest || !e.target.closest('.tp-ctxpop, [data-tp-more]'))) hideCtx();
-  });
-
   /* ---------- 样式注入 ---------- */
   function injectStyles() {
     if (typeof document === 'undefined' || !document.head) return;
@@ -959,13 +938,6 @@
       '.tp-row:hover .tp-more,.tp-more[aria-expanded="true"]{opacity:1}' +
       '.tp-more:hover{background:var(--background);color:inherit}' +
       '.tp-more svg{width:.8125rem;height:.8125rem}' +
-      '.tp-ctxpop{position:fixed;z-index:1000;min-width:10rem;padding:.25rem;border-radius:.5rem;background:var(--popover);color:var(--popover-foreground);box-shadow:0 8px 24px rgba(0,0,0,.18);border:1px solid var(--border)}' +
-      '.tp-mi{display:flex;align-items:center;gap:.5rem;width:100%;padding:.375rem .5rem;border:0;border-radius:.375rem;background:transparent;color:inherit;font-size:.8125rem;cursor:pointer;text-align:left;outline:none}' +
-      '.tp-mi:hover{background:var(--accent)}' +
-      '.tp-mi.is-danger{color:var(--destructive)}' +
-      '.tp-mi.is-danger:hover{background:color-mix(in oklab,var(--destructive) 10%,transparent)}' +
-      '.tp-mi svg{width:.875rem;height:.875rem;flex-shrink:0}' +
-      '.tp-msep{height:1px;margin:.25rem .375rem;background:var(--border)}' +
       '.tp-empty{padding:.5rem .375rem;font-size:.75rem;color:var(--muted-foreground)}' +
       '.tp-body mark{background:transparent;color:inherit;font-weight:700;text-decoration:underline;text-decoration-color:var(--primary);text-underline-offset:2px}' +
       /* 多选下拉 */

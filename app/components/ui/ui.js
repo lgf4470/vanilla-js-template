@@ -583,7 +583,7 @@
   function ctxEmpty(text) {
     return '<div class="ui-ctxempty">' + escHtml(text) + '</div>';
   }
-  /** 打开浮层菜单:opts = { anchorEl, x, y, className };返回 popup 元素 */
+  /** 打开浮层菜单:opts = { anchorEl, x, y, className, keepOpenOn, onClose };返回 popup 元素 */
   function contextMenuOpen(html, opts) {
     contextMenuClose();
     var o = opts || {};
@@ -591,6 +591,9 @@
     ctxPop.className = 'ui-ctxpop' + (o.className ? ' ' + o.className : '');
     ctxPop.setAttribute('data-ctxpop', '');
     ctxPop.innerHTML = html;
+    // keepOpenOn:该选择器内点击不触发外部关闭(交由宿主切换收起);onClose:关闭后回调(宿主清理状态)
+    ctxPop._keepOpenOn = o.keepOpenOn || '';
+    ctxPop._onClose = typeof o.onClose === 'function' ? o.onClose : null;
     document.body.appendChild(ctxPop);
     var w = ctxPop.offsetWidth || 200;
     var h = ctxPop.offsetHeight || 260;
@@ -611,11 +614,18 @@
   }
   function contextMenuClose() {
     if (ctxPop && ctxPop.parentNode) ctxPop.parentNode.removeChild(ctxPop);
+    var cb = ctxPop && ctxPop._onClose;
     ctxPop = null;
+    if (cb) cb();
   }
-  // 点击浮层外 → 关闭(全局单例,多实例互斥)
+  // 点击浮层外 → 关闭(全局单例,多实例互斥;keepOpenOn 命中不关闭,交由宿主切换)
   document.addEventListener('click', function (e) {
-    if (ctxPop && e.target && !(e.target.closest && e.target.closest('[data-ctxpop]'))) {
+    if (
+      ctxPop &&
+      e.target &&
+      (!e.target.closest || !e.target.closest('[data-ctxpop]')) &&
+      !(ctxPop._keepOpenOn && e.target.closest && e.target.closest(ctxPop._keepOpenOn))
+    ) {
       contextMenuClose();
     }
   });

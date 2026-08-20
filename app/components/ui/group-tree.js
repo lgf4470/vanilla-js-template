@@ -363,28 +363,20 @@
   function ctxItemsHtml(inst, id) {
     var L = inst.labels();
     function item(act, label, iconName, danger) {
-      return (
-        '<button type="button" class="gt-ctxitem' +
-        (danger ? ' is-danger' : '') +
-        '" data-gt-ctx="' +
-        act +
-        '" data-id="' +
-        esc(id) +
-        '">' +
-        ic(iconName) +
-        esc(label) +
-        '</button>'
-      );
+      return App.ui.contextMenu.item(iconName, label, {
+        attrs: 'data-gt-ctx="' + act + '" data-id="' + esc(id) + '"',
+        danger: !!danger,
+      });
     }
     return (
       item('newchild', L.newChild || '新建子分组', 'plus') +
       item('newsibling', L.newSibling || '新建同级', 'circle-plus') +
       item('rename', L.rename || '重命名', 'pencil') +
       item('move', L.moveTo || '移动到…', 'arrow-right') +
-      '<div class="gt-ctxsep"></div>' +
+      App.ui.contextMenu.separator() +
       item('icon', L.icon || '设置图标', 'image-plus') +
       item('color', L.color || '设置颜色', 'palette') +
-      '<div class="gt-ctxsep"></div>' +
+      App.ui.contextMenu.separator() +
       item('del', L.delete || '删除', 'trash-2', true)
     );
   }
@@ -797,47 +789,36 @@
     }
   }
 
-  /* ---------- 右键/⋯ 菜单浮层(统一 body 级 fixed,避免被侧栏遮挡) ---------- */
+  /* ---------- 右键/⋯ 菜单浮层(公共 App.ui.contextMenu,body 级 fixed) ---------- */
   var ctxPopup = null;
   var ctxTrigger = null;
   function showCtxMenu(inst, id, x, y, anchorEl) {
     hideCtxMenu();
-    ctxPopup = document.createElement('div');
-    ctxPopup.className = 'gt-ctxpop';
-    ctxPopup.innerHTML = ctxItemsHtml(inst, id);
+    ctxPopup = App.ui.contextMenu.open(ctxItemsHtml(inst, id), {
+      anchorEl: anchorEl,
+      x: x,
+      y: y,
+      className: 'gt-ctxpop',
+      keepOpenOn: '[data-gt-more]',
+      onClose: function () {
+        // 外部点击 / Esc / 新菜单打开时:清理实例引用与触发按钮状态
+        ctxPopup = null;
+        if (ctxTrigger) {
+          ctxTrigger.removeAttribute('aria-expanded');
+          ctxTrigger = null;
+        }
+      },
+    });
     // 浮层挂在 body 下(不在 [data-gt-tree] 内),把实例引用挂到元素上,
     // 供 document 级 click 委托解析,否则菜单项点击不生效。
     ctxPopup._gtInst = inst;
-    document.body.appendChild(ctxPopup);
-    var w = ctxPopup.offsetWidth || 176;
-    var h = ctxPopup.offsetHeight || 240;
-    var left, top;
-    if (anchorEl && anchorEl.getBoundingClientRect) {
-      var rect = anchorEl.getBoundingClientRect();
-      left = rect.right - w;
-      top = rect.bottom + 4;
-      if (left < 4) left = 4;
-      if (top + h > window.innerHeight - 4) top = Math.max(4, rect.top - h - 4);
-    } else {
-      left = Math.max(4, x || 0);
-      top = Math.max(4, y || 0);
-    }
-    ctxPopup.style.left = left + 'px';
-    ctxPopup.style.top = top + 'px';
     if (anchorEl) {
       ctxTrigger = anchorEl;
       anchorEl.setAttribute('aria-expanded', 'true');
     }
   }
   function hideCtxMenu() {
-    if (ctxTrigger) {
-      ctxTrigger.removeAttribute('aria-expanded');
-      ctxTrigger = null;
-    }
-    if (ctxPopup) {
-      ctxPopup.remove();
-      ctxPopup = null;
-    }
+    App.ui.contextMenu.close(); // onClose 统一清理 ctxPopup / ctxTrigger
   }
 
   /* ---------- 拖拽 ---------- */
@@ -1058,11 +1039,6 @@
     clearDropIndicators();
   });
 
-  /* 点击空白处收起菜单(⋯ 按钮除外,避免同一次点击刚打开又收起) */
-  document.addEventListener('click', function (e) {
-    if (ctxPopup && e.target && (!e.target.closest || !e.target.closest('.gt-ctxpop, [data-gt-more]'))) hideCtxMenu();
-  });
-
   /* ---------- 样式注入 ---------- */
   function injectStyles() {
     if (typeof document === 'undefined' || !document.head) return;
@@ -1098,13 +1074,6 @@
       '.gt-row:hover .gt-more,.gt-more[aria-expanded="true"]{opacity:1}' +
       '.gt-more:hover{background:var(--background);color:inherit}' +
       '.gt-more svg{width:.875rem;height:.875rem}' +
-      '.gt-ctxpop{position:fixed;z-index:1000;min-width:11rem;padding:.25rem;border-radius:.5rem;background:var(--popover);color:var(--popover-foreground);box-shadow:0 8px 24px rgba(0,0,0,.18);border:1px solid var(--border)}' +
-      '.gt-ctxitem{display:flex;align-items:center;gap:.5rem;width:100%;padding:.375rem .5rem;border:0;border-radius:.375rem;background:transparent;color:inherit;font-size:.8125rem;cursor:pointer;text-align:left;outline:none}' +
-      '.gt-ctxitem:hover{background:var(--accent)}' +
-      '.gt-ctxitem.is-danger{color:var(--destructive)}' +
-      '.gt-ctxitem.is-danger:hover{background:color-mix(in oklab,var(--destructive) 10%,transparent)}' +
-      '.gt-ctxitem svg{width:.875rem;height:.875rem;flex-shrink:0}' +
-      '.gt-ctxsep{height:1px;margin:.25rem .375rem;background:var(--border)}' +
       '.gt-empty{padding:.5rem .375rem;font-size:.75rem;color:var(--muted-foreground)}' +
       /* 弹窗 */
       '.gt-overlay{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45)}' +
