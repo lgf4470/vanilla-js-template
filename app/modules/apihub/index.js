@@ -1872,10 +1872,7 @@
     var list = filteredRoutes();
     if (!list.length) {
       return (
-        '<div class="hub-empty">' +
-        icon('route', '') +
-        esc(t('apihub.empty')) +
-        '</div>'
+        App.ui.emptyState({ icon: 'route', desc: esc(t('apihub.empty')) })
       );
     }
     return list
@@ -2364,10 +2361,8 @@
         '<div class="hub-page">' +
         head +
         '<div class="hub-grid"><div class="hub-col hub-list"><div class="hub-list-body">' +
-        '<div class="hub-empty">' +
-        icon('circle-alert', '') +
-        esc(state.error) +
-        '</div></div></div></div></div>'
+        App.ui.emptyState({ icon: 'circle-alert', desc: esc(state.error) }) +
+        '</div></div></div></div>'
       );
     }
     if (!state.loaded) {
@@ -2375,10 +2370,8 @@
         '<div class="hub-page">' +
         head +
         '<div class="hub-grid"><div class="hub-col hub-list"><div class="hub-list-body">' +
-        '<div class="hub-empty">' +
-        icon('route', '') +
-        esc(t('apihub.loading')) +
-        '</div></div></div></div></div>'
+        App.ui.emptyState({ icon: 'route', desc: esc(t('apihub.loading')) }) +
+        '</div></div></div></div>'
       );
     }
     return (

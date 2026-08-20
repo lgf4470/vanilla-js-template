@@ -264,3 +264,36 @@
   --hub-tag: #71717a;
   --hub-hl-null: #94a3b8;
 }
+
+/* ---------- 公共空状态(ui.js emptyState;遵循反留白铁律 3.6:图标+引导文案) ---------- */
+.ui-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--spacing) * 3);
+  padding: calc(var(--spacing) * 10) calc(var(--spacing) * 6);
+  text-align: center;
+}
+.ui-empty-fill {
+  flex: 1;
+}
+.ui-empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 9999px;
+  border: 2px solid var(--border);
+  color: var(--muted-foreground);
+}
+.ui-empty-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+.ui-empty-desc {
+  max-width: 24rem;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}

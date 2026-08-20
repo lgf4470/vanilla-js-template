@@ -179,10 +179,3 @@ html.dark .ap-connect-on:hover {
   color: var(--muted-foreground);
   font-size: 0.875rem;
 }
-.ap-empty {
-  grid-column: 1 / -1;
-  padding: 3rem 1rem;
-  text-align: center;
-  color: var(--muted-foreground);
-  font-size: 0.875rem;
-}

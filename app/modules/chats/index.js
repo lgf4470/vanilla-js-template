@@ -538,20 +538,18 @@
         '</div>';
     } else {
       html +=
-        '<div class="ch-empty">' +
-        '<div class="ch-empty-icon">' +
-        icon().iconSvg('messages-square', { class: 'size-8' }) +
-        '</div>' +
-        '<h1>' +
-        t('chats.yourMessages') +
-        '</h1>' +
-        '<p>' +
-        t('chats.emptyDesc') +
-        '</p>' +
-        '<button type="button" class="ch-empty-btn" data-ch-new>' +
-        t('chats.sendMessage') +
-        '</button>' +
-        '</div>';
+        App.ui.emptyState({
+          icon: 'messages-square',
+          title: t('chats.yourMessages'),
+          desc: t('chats.emptyDesc'),
+          fill: true,
+          actionHtml:
+            '<button type="button" class="' +
+            App.ui.buttonClass('default') +
+            '" data-ch-new>' +
+            t('chats.sendMessage') +
+            '</button>',
+        });
     }
 
     html += '</div></div>';

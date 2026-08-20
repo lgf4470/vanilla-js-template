@@ -240,7 +240,11 @@
       '<div class="ap-grid">';
 
     if (list.length === 0) {
-      html += '<div class="ap-empty">No apps found.</div>';
+      html += App.ui.emptyState({
+        icon: 'package',
+        title: esc(t('apps.emptyTitle')),
+        desc: esc(t('apps.emptyDesc')),
+      });
     } else {
       html += list
         .map(function (a) {

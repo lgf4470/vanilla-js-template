@@ -653,23 +653,6 @@
   font-size: 0.6875rem;
   line-height: 1.125rem;
 }
-.hub-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 3rem 1rem;
-  color: var(--muted-foreground);
-  font-size: 0.8125rem;
-  text-align: center;
-}
-.hub-empty svg {
-  width: 1.75rem;
-  height: 1.75rem;
-  opacity: 0.6;
-}
-
 /* ---------- 右侧:请求构建器 ---------- */
 .hub-run-scroll {
   flex: 1 1 auto;

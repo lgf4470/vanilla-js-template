@@ -188,6 +188,26 @@
     );
   }
 
+  // ---------- 空状态(图标 + 标题 + 描述 + 可选操作;遵循反留白铁律 3.6) ----------
+  /** opts: { icon, title, desc, actionHtml, fill } — 各模块空列表/空结果统一使用 */
+  function emptyState(opts) {
+    var o = opts || {};
+    return (
+      '<div class="ui-empty' +
+      (o.fill ? ' ui-empty-fill' : '') +
+      '">' +
+      (o.icon
+        ? '<div class="ui-empty-icon">' +
+          App.icon.iconSvg(o.icon, { class: 'size-8' }) +
+          '</div>'
+        : '') +
+      (o.title ? '<h1 class="ui-empty-title">' + o.title + '</h1>' : '') +
+      (o.desc ? '<p class="ui-empty-desc">' + o.desc + '</p>' : '') +
+      (o.actionHtml ? o.actionHtml : '') +
+      '</div>'
+    );
+  }
+
   // ---------- 通用页面渲染 ----------
   /** 子页面占位卡(渠道/令牌/日志/系统等模块共用) */
   function placeholderCard(t, icon, title, desc) {
@@ -446,6 +466,7 @@
     avatarHtml: avatarHtml,
     placeholderCard: placeholderCard,
     notFound: notFound,
+    emptyState: emptyState,
     radio: {
       gridClass: rgGridClass,
       sectionTitle: radioSectionTitle,

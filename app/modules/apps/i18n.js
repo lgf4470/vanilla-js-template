@@ -14,6 +14,8 @@ window.__moduleI18n['apps'] = {
     'apps.sort.desc': '降序',
     'apps.connected': '已连接',
     'apps.connect': '连接',
+    'apps.emptyTitle': '没有找到应用',
+    'apps.emptyDesc': '尝试调整筛选条件，或稍后再来看看。',
   },
   'zh-TW': {
     'apps.title': '應用整合',
@@ -26,6 +28,8 @@ window.__moduleI18n['apps'] = {
     'apps.sort.desc': '降序',
     'apps.connected': '已連線',
     'apps.connect': '連線',
+    'apps.emptyTitle': '找不到應用',
+    'apps.emptyDesc': '試著調整篩選條件，或稍後再回來看看。',
   },
   en: {
     'apps.title': 'App Integrations',
@@ -38,5 +42,7 @@ window.__moduleI18n['apps'] = {
     'apps.sort.desc': 'Descending',
     'apps.connected': 'Connected',
     'apps.connect': 'Connect',
+    'apps.emptyTitle': 'No apps found',
+    'apps.emptyDesc': 'Try adjusting your filters, or check back later.',
   },
 };
