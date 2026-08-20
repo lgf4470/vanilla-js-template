@@ -135,7 +135,7 @@ Docs 和 Settings 的子模块使用 `sub/<id>.js` 并调用 `App.defineModule({
 
 ### 3.3 主题状态
 
-主题状态使用 `html.dark` 与 `style-*`、`base-*`、`chart-*`、`menu-*` class 组合，`App.settings.applySettings()` 负责把白名单值应用到根节点。
+主题状态使用 `html.dark` 与 `style-*`、`base-*`、`chart-*`、`menu-*` class 组合，`App.settings.applySettings()` 负责把白名单值应用到根节点。基础色/强调色行右侧各有一个启用开关（`useBase` / `useAccent`）：开关关闭时对应 class 不挂载，表面色回退默认 zinc、主色回退主题模式默认（浅色近黑 / 深色近白），从而保证 dark 模式不被色板选项破坏；开关与色板选择都经 `html-template-*` 本地持久化并双向同步服务端 `app_settings`。强调色规则必须声明为 `:root.chart-*` / `:root.dark.chart-*`（与基础色规则同特异性且位于其后），否则会被 `:root.base-*` 的 `--primary` 压住而永不生效（`menu-color-inverted` 同理）。
 
 ### 3.4 模块样式作用域
 
@@ -152,6 +152,28 @@ Docs 和 Settings 的子模块使用 `sub/<id>.js` 并调用 `App.defineModule({
 - 默认内边距使用 `--spacing-3`（`calc(var(--spacing) * 3)`）；
 - 数值类信息必须配图标（`App.icon.iconSvg(...)`）；
 - 空状态必须有图标 + 引导文案，禁止只有一行灰字。
+
+### 3.7 受控组件铁律（主题面板全量控制）
+
+所有组件（含 canvas 图表等非 DOM 渲染）必须由主题设置面板全量控制，逐项对应：
+
+| 面板选项 | 控制方式 |
+|---|---|
+| 主题模式（跟随系统/浅/深） | `html.dark` + `prefers-color-scheme`，表面/文字/边框 token 双套定义 |
+| 基础色（neutral…taupe）+ 启用开关 | `base-*` 类定义表面色 token；开关关闭时移除该类，回退默认 zinc 表面 |
+| 强调色（zinc…yellow）+ 启用开关 | `chart-*` 类定义 `--primary / --primary-foreground / --ring / --sidebar-primary / --chart-1..5`；开关关闭时回退主题模式默认主色 |
+| 风格（nova/vega/maia/lyra/mira/luma/sera/rhea） | `style-*` 类 + `[data-slot=*]` 组件规则（按钮/卡片/输入框等皮肤；全库按钮须带 `data-slot="button"` 才命中） |
+| 正文字体 / 标题字体 | `--font-sans-base` / `--font-heading-base` |
+| 圆角 | `--radius`（DOM 组件与 canvas 图表都须消费） |
+| 菜单颜色 / 外观 / 强调 | `menu-*` 类（如 `menu-color-inverted`，须声明为 `:root.menu-*` 才生效） |
+
+硬性要求（不可协商）：
+
+1. **颜色禁止硬编码**（hex / rgb / hsl / oklch / 命名色，含注入 `<style>` 与内联 `style`），一律经 token 变量引用；唯一豁免是**用户显式指定的色值**（标签色、取色器实时预览、上下文菜单 hash 色等），且此类值来自数据字段或 `--nova-palette-*`，不写死在组件代码里。
+2. **完整回退链路**：每个 token 消费处必须提供 fallback，顺序为「强调色 → 基础色 → 主题模式默认 → 兜底字面量」。例：`var(--primary, var(--chart-1, oklch(62% .04 285)))`、`var(--font-heading-base, inherit)`、`border-radius: var(--radius, 0.5rem)`、`border-color: color-mix(in oklab, var(--border) 60%, transparent)`。
+3. **阴影/遮罩**为通用着色，统一走 tokens.css 的 `.shadow-*` 工具类，组件内禁止写死 rgba。
+4. **canvas 图表**不消费 DOM 规则，必须在初始化及 `app:themechange` 时经 `getComputedStyle(document.documentElement)` 读取同一 token（dashboard 的 `cssVar('--primary')`、`cssVar('--chart-2')`、`radiusPx()` 即此模式）并重建。
+5. 新组件须在 light/dark 两套主题、全部 8 套风格与不同圆角取值下自测，无固定配色残留；`just lint` 强制检查颜色字面量（含 CSS 与注入样式）。
 
 ## 4. 后端架构
 
