@@ -7,7 +7,7 @@
 1. **零第三方依赖**：`package.json` 的 `dependencies` 与 `devDependencies` 必须为空。
 2. **完整复刻模板体验**：迁移自原 One API 模板的 Shell、Dashboard、Tasks、Apps、Chats、Docs、API Hub、Settings、主题、工作空间、配置文件与鉴权行为，文件已提升到当前仓库约定的目录。
 3. **渐进式加载**：登录页只加载鉴权核心；登录后加载 Shell 与模块注册表；业务模块的实现、样式和语言包按路由懒加载。
-4. **后端逻辑集中**：API 业务逻辑按 `server/modules/<id>/routes.js` 与 `service.js` 组织，运行时差异只存在于 `server/adapters/`。
+4. **后端逻辑集中**：API 业务逻辑按 `server/modules/<id>/routes.js` 组织（必要时配 `service.js`；现有 `auth`/`settings` 内联 SQL 属历史实现，逐步拆分），运行时差异只存在于 `server/adapters/`。
 5. **安全默认**：登录密码不落库；会话只保存 SHA-256 哈希；敏感设置通过 AES-256-GCM 加密后落库；SQL 全部参数化。
 
 ## 1. 目录结构
