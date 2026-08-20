@@ -16,7 +16,7 @@
 8. **敏感字段禁止明文入库**（清单见 `ARCHITECTURE.md` 4.6 节：用户信息、API Key、Token、需要落库的数据库凭证等）。新增涉及敏感字段的表/接口前，先确认加密/哈希方案，不确定就询问而不是自行明文实现。
 9. **禁止引入 ORM 或查询构建器依赖**，保持 SQL-first。
 10. **建表 SQL 单一来源、只增不改**：`server/db/schema.js` 是唯一事实来源，新表只追加 `CREATE TABLE IF NOT EXISTS`（幂等）；旧结构迁移在适配器 `migrateAppSettings` / `migrateAuthSessions` 中幂等执行，不得修改已合并的迁移逻辑。
-11. **组件必须受主题设置面板全量控制（受控组件铁律，不可违反）**：任何新增/修改的组件都必须随主题面板所有选项实时变化——主题模式（跟随系统/浅/深）、基础色、强调色、风格（nova…rhea）、正文字体、标题字体、圆角、菜单颜色/外观/强调。颜色一律经 `app/styles/tokens.css` 的 token 变量引用：主色系走强调色驱动变量（`--primary` / `--primary-foreground` / `--ring` / `--sidebar-primary` / `--chart-1..5`），表面/文字/边框系走基础色驱动变量（`--background` / `--card` / `--foreground` / `--border` 等）。**禁止任何硬编码颜色**（hex / rgb / hsl / oklch / 命名色，含注入 `<style>` 与内联 `style`），唯一例外是**用户显式指定的色值**（标签色、取色器预览、上下文菜单 hash 色等，且此类值走数据字段或 `--nova-palette-*`，不得写死在组件里）。每个 token 消费处必须提供回退值，形成完整回退链路：强调色 → 基础色 → 主题模式默认 → 兜底字面量，如 `var(--primary, var(--chart-1, oklch(62% .04 285)))`、`var(--font-heading-base, inherit)`、`border-radius: var(--radius, 0.5rem)`；阴影/遮罩一律走 tokens.css 的 `.shadow-*` 工具类。canvas 图表等非 DOM 渲染同样必须消费同一 token（初始化及 `app:themechange` 时经 `getComputedStyle` 读取 CSS 变量并重建，如 dashboard 的 `cssVar('--primary')` / `radiusPx()`）。
+11. **组件必须是受控、可拓展且受主题设置面板全量控制（铁律，不可违反）**：任何新增/修改组件都必须提供清晰的配置/数据/状态接入点，禁止只适配单一页面或复制业务实现；默认视觉必须是当前项目统一的 **shadcn base UI + nova style + zinc color** 变体，尤其是移植参考项目模块时，**禁止直接照搬参考项目的组件样式**，必须改造为本项目的公共 UI 与 token 体系。组件必须随主题面板所有选项实时变化——主题模式（跟随系统/浅/深）、基础色、强调色、风格（nova…rhea）、正文字体、标题字体、圆角、菜单颜色/外观/强调。颜色一律经 `app/styles/tokens.css` 的 token 变量引用：主色系走强调色驱动变量（`--primary` / `--primary-foreground` / `--ring` / `--sidebar-primary` / `--chart-1..5`），表面/文字/边框系走基础色驱动变量（`--background` / `--card` / `--foreground` / `--border` 等）。**禁止任何硬编码颜色**（hex / rgb / hsl / oklch / 命名色，含注入 `<style>` 与内联 `style`），唯一例外是**用户显式指定的色值**（标签色、取色器预览、上下文菜单 hash 色等，且此类值走数据字段或 `--nova-palette-*`，不得写死在组件里）。每个 token 消费处必须提供回退值，形成完整回退链路：强调色 → 基础色 → 主题模式默认 → 兜底字面量，如 `var(--primary, var(--chart-1, oklch(62% .04 285)))`、`var(--font-heading-base, inherit)`、`border-radius: var(--radius, 0.5rem)`；阴影/遮罩一律走 tokens.css 的 `.shadow-*` 工具类。canvas 图表等非 DOM 渲染同样必须消费同一 token（初始化及 `app:themechange` 时经 `getComputedStyle` 读取 CSS 变量并重建，如 dashboard 的 `cssVar('--primary')` / `radiusPx()`）。
 
 ---
 
@@ -41,7 +41,7 @@
 - 先搜索 `app/components/ui/` 是否已有可复用组件，**禁止在模块私有目录重复造已存在的基础组件**（按钮、卡片、弹窗、输入框、下拉、Tabs 等）；
 - 只有明确"仅本模块使用、不具备通用性"的组件才放在模块的 `components/` 目录；
 - 新建公共组件必须：沿用 `App.ui` 函数式渲染（返回 HTML 字符串，不使用 Shadow DOM）、只消费 token 变量（不硬编码视觉数值）、支持键盘可达性（Tab/Enter/Esc）、在 light/dark 两套主题下自测；
-- 新建/修改组件必须为**受控组件**（见 `ARCHITECTURE.md` 3.7 铁律）：全量响应主题面板所有选项（主题模式、基础色、强调色、风格、字体、圆角、菜单外观），默认视觉只允许来自 token 变量，禁止自带固定配色；颜色必须引用基础色/强调色驱动变量并带完整回退值（`var(--token, fallback)`），明暗两套主题、全部 8 套风格与不同圆角下自测无固定配色残留；
+- 新建/修改组件必须是**受控且可拓展组件**（见 `ARCHITECTURE.md` 3.7 铁律）：默认视觉以 **shadcn base UI + nova style + zinc color** 为基线，并全量响应主题面板所有选项（主题模式、基础色、强调色、风格、字体、圆角、菜单外观）；移植参考项目时不得直接复制其组件样式，必须改造为本项目统一 UI；默认视觉只允许来自 token 变量，禁止自带固定配色；颜色必须引用基础色/强调色驱动变量并带完整回退值（`var(--token, fallback)`），明暗两套主题、全部 8 套风格与不同圆角下自测无固定配色残留；
 - 涉及信息展示类组件（卡片、列表项等）必须遵循 `ARCHITECTURE.md` 3.6 节"反留白铁律"：默认使用 `--spacing-3`、数值类信息配图标、空状态必须有图标+引导文案。
 
 ## 5. 数据库变更规范
