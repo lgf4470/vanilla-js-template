@@ -864,10 +864,15 @@
     var contentArea = app.querySelector('[data-content-area]');
     var viewport = app.querySelector('[data-slot="scroll-area-viewport"]');
     var scrollTop = viewport ? viewport.scrollTop : 0;
+    // 设置页左右两栏各自独立滚动:重渲染后同样保留右侧内容栏的滚动位置
+    var spContent = contentArea ? contentArea.querySelector('.sp-content') : null;
+    var spScrollTop = spContent ? spContent.scrollTop : 0;
     resolveRoute(currentPath(), settings)
       .then(function (result) {
         if (contentArea) contentArea.innerHTML = result.html;
         if (viewport) viewport.scrollTop = scrollTop;
+        var next = contentArea ? contentArea.querySelector('.sp-content') : null;
+        if (next) next.scrollTop = spScrollTop;
         updateNavActive(currentPath());
       })
       .catch(function (e) {
