@@ -1,6 +1,6 @@
 # One API
 
-> 纯 JavaScript、零第三方依赖的模块化管理后台。此项目已将 `.wrangler/html-template` 的 Dashboard、Tasks、Apps、Chats、Docs、API Hub、Settings、工作空间、配置文件、主题与鉴权能力完整适配到当前仓库的 `app/`、`server/`、`shared/` 目录约定。
+> 纯 JavaScript、零第三方依赖的模块化管理后台。
 
 架构真源见 [`ARCHITECTURE.md`](./ARCHITECTURE.md)，协作规则见 [`AGENTS.md`](./AGENTS.md)。
 
