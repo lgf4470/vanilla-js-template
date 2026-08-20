@@ -641,3 +641,99 @@ textarea.ui-input {
   width: 0.6875rem;
   height: 0.6875rem;
 }
+
+/* ---------- 强调色(chart-*)驱动全局主色 ----------
+ * 主题设置"强调色"选中的颜色同时成为 --primary 系列(按钮/开关/选中态/侧边栏高亮/聚焦环);
+ * 色值复用上方 .swatch-* 色板,确保面板预览与真实渲染一致。 */
+.chart-zinc{--primary:oklch(62% .04 285);--primary-foreground:var(--nova-white);--ring:oklch(62% .04 285);--sidebar-primary:oklch(62% .04 285);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-zinc{--primary:oklch(62% .04 285);--primary-foreground:var(--nova-white);--ring:oklch(62% .04 285);--sidebar-primary:oklch(62% .04 285);--sidebar-primary-foreground:var(--nova-white)}
+.chart-neutral{--primary:oklch(62% 0 0);--primary-foreground:var(--nova-white);--ring:oklch(62% 0 0);--sidebar-primary:oklch(62% 0 0);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-neutral{--primary:oklch(62% 0 0);--primary-foreground:var(--nova-white);--ring:oklch(62% 0 0);--sidebar-primary:oklch(62% 0 0);--sidebar-primary-foreground:var(--nova-white)}
+.chart-stone{--primary:oklch(62% .055 60);--primary-foreground:var(--nova-white);--ring:oklch(62% .055 60);--sidebar-primary:oklch(62% .055 60);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-stone{--primary:oklch(62% .055 60);--primary-foreground:var(--nova-white);--ring:oklch(62% .055 60);--sidebar-primary:oklch(62% .055 60);--sidebar-primary-foreground:var(--nova-white)}
+.chart-mauve{--primary:oklch(62% .09 322);--primary-foreground:var(--nova-white);--ring:oklch(62% .09 322);--sidebar-primary:oklch(62% .09 322);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-mauve{--primary:oklch(62% .09 322);--primary-foreground:var(--nova-white);--ring:oklch(62% .09 322);--sidebar-primary:oklch(62% .09 322);--sidebar-primary-foreground:var(--nova-white)}
+.chart-olive{--primary:oklch(62% .09 107);--primary-foreground:var(--nova-white);--ring:oklch(62% .09 107);--sidebar-primary:oklch(62% .09 107);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-olive{--primary:oklch(62% .09 107);--primary-foreground:var(--nova-white);--ring:oklch(62% .09 107);--sidebar-primary:oklch(62% .09 107);--sidebar-primary-foreground:var(--nova-white)}
+.chart-mist{--primary:oklch(62% .06 224);--primary-foreground:var(--nova-white);--ring:oklch(62% .06 224);--sidebar-primary:oklch(62% .06 224);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-mist{--primary:oklch(62% .06 224);--primary-foreground:var(--nova-white);--ring:oklch(62% .06 224);--sidebar-primary:oklch(62% .06 224);--sidebar-primary-foreground:var(--nova-white)}
+.chart-taupe{--primary:oklch(62% .06 43);--primary-foreground:var(--nova-white);--ring:oklch(62% .06 43);--sidebar-primary:oklch(62% .06 43);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-taupe{--primary:oklch(62% .06 43);--primary-foreground:var(--nova-white);--ring:oklch(62% .06 43);--sidebar-primary:oklch(62% .06 43);--sidebar-primary-foreground:var(--nova-white)}
+.chart-amber{--primary:oklch(55.5% .163 48.998);--primary-foreground:var(--nova-white);--ring:oklch(55.5% .163 48.998);--sidebar-primary:oklch(55.5% .163 48.998);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-amber{--primary:oklch(55.5% .163 48.998);--primary-foreground:var(--nova-white);--ring:oklch(55.5% .163 48.998);--sidebar-primary:oklch(55.5% .163 48.998);--sidebar-primary-foreground:var(--nova-white)}
+.chart-blue{--primary:oklch(48.8% .243 264.376);--primary-foreground:var(--nova-white);--ring:oklch(48.8% .243 264.376);--sidebar-primary:oklch(48.8% .243 264.376);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-blue{--primary:oklch(48.8% .243 264.376);--primary-foreground:var(--nova-white);--ring:oklch(48.8% .243 264.376);--sidebar-primary:oklch(48.8% .243 264.376);--sidebar-primary-foreground:var(--nova-white)}
+.chart-cyan{--primary:oklch(52% .105 223.128);--primary-foreground:var(--nova-white);--ring:oklch(52% .105 223.128);--sidebar-primary:oklch(52% .105 223.128);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-cyan{--primary:oklch(52% .105 223.128);--primary-foreground:var(--nova-white);--ring:oklch(52% .105 223.128);--sidebar-primary:oklch(52% .105 223.128);--sidebar-primary-foreground:var(--nova-white)}
+.chart-emerald{--primary:oklch(50.8% .118 165.612);--primary-foreground:var(--nova-white);--ring:oklch(50.8% .118 165.612);--sidebar-primary:oklch(50.8% .118 165.612);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-emerald{--primary:oklch(50.8% .118 165.612);--primary-foreground:var(--nova-white);--ring:oklch(50.8% .118 165.612);--sidebar-primary:oklch(50.8% .118 165.612);--sidebar-primary-foreground:var(--nova-white)}
+.chart-fuchsia{--primary:oklch(51.8% .253 323.949);--primary-foreground:var(--nova-white);--ring:oklch(51.8% .253 323.949);--sidebar-primary:oklch(51.8% .253 323.949);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-fuchsia{--primary:oklch(51.8% .253 323.949);--primary-foreground:var(--nova-white);--ring:oklch(51.8% .253 323.949);--sidebar-primary:oklch(51.8% .253 323.949);--sidebar-primary-foreground:var(--nova-white)}
+.chart-green{--primary:oklch(52.7% .154 150.069);--primary-foreground:var(--nova-white);--ring:oklch(52.7% .154 150.069);--sidebar-primary:oklch(52.7% .154 150.069);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-green{--primary:oklch(52.7% .154 150.069);--primary-foreground:var(--nova-white);--ring:oklch(52.7% .154 150.069);--sidebar-primary:oklch(52.7% .154 150.069);--sidebar-primary-foreground:var(--nova-white)}
+.chart-indigo{--primary:oklch(45.7% .24 277.023);--primary-foreground:var(--nova-white);--ring:oklch(45.7% .24 277.023);--sidebar-primary:oklch(45.7% .24 277.023);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-indigo{--primary:oklch(45.7% .24 277.023);--primary-foreground:var(--nova-white);--ring:oklch(45.7% .24 277.023);--sidebar-primary:oklch(45.7% .24 277.023);--sidebar-primary-foreground:var(--nova-white)}
+.chart-lime{--primary:oklch(84.1% .238 128.85);--primary-foreground:var(--nova-white);--ring:oklch(84.1% .238 128.85);--sidebar-primary:oklch(84.1% .238 128.85);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-lime{--primary:oklch(84.1% .238 128.85);--primary-foreground:var(--nova-white);--ring:oklch(84.1% .238 128.85);--sidebar-primary:oklch(84.1% .238 128.85);--sidebar-primary-foreground:var(--nova-white)}
+.chart-orange{--primary:oklch(55.3% .195 38.402);--primary-foreground:var(--nova-white);--ring:oklch(55.3% .195 38.402);--sidebar-primary:oklch(55.3% .195 38.402);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-orange{--primary:oklch(55.3% .195 38.402);--primary-foreground:var(--nova-white);--ring:oklch(55.3% .195 38.402);--sidebar-primary:oklch(55.3% .195 38.402);--sidebar-primary-foreground:var(--nova-white)}
+.chart-pink{--primary:oklch(52.5% .223 3.958);--primary-foreground:var(--nova-white);--ring:oklch(52.5% .223 3.958);--sidebar-primary:oklch(52.5% .223 3.958);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-pink{--primary:oklch(52.5% .223 3.958);--primary-foreground:var(--nova-white);--ring:oklch(52.5% .223 3.958);--sidebar-primary:oklch(52.5% .223 3.958);--sidebar-primary-foreground:var(--nova-white)}
+.chart-purple{--primary:oklch(49.6% .265 301.924);--primary-foreground:var(--nova-white);--ring:oklch(49.6% .265 301.924);--sidebar-primary:oklch(49.6% .265 301.924);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-purple{--primary:oklch(49.6% .265 301.924);--primary-foreground:var(--nova-white);--ring:oklch(49.6% .265 301.924);--sidebar-primary:oklch(49.6% .265 301.924);--sidebar-primary-foreground:var(--nova-white)}
+.chart-red{--primary:oklch(50.5% .213 27.518);--primary-foreground:var(--nova-white);--ring:oklch(50.5% .213 27.518);--sidebar-primary:oklch(50.5% .213 27.518);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-red{--primary:oklch(50.5% .213 27.518);--primary-foreground:var(--nova-white);--ring:oklch(50.5% .213 27.518);--sidebar-primary:oklch(50.5% .213 27.518);--sidebar-primary-foreground:var(--nova-white)}
+.chart-rose{--primary:oklch(51.4% .222 16.935);--primary-foreground:var(--nova-white);--ring:oklch(51.4% .222 16.935);--sidebar-primary:oklch(51.4% .222 16.935);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-rose{--primary:oklch(51.4% .222 16.935);--primary-foreground:var(--nova-white);--ring:oklch(51.4% .222 16.935);--sidebar-primary:oklch(51.4% .222 16.935);--sidebar-primary-foreground:var(--nova-white)}
+.chart-sky{--primary:oklch(50% .134 242.749);--primary-foreground:var(--nova-white);--ring:oklch(50% .134 242.749);--sidebar-primary:oklch(50% .134 242.749);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-sky{--primary:oklch(50% .134 242.749);--primary-foreground:var(--nova-white);--ring:oklch(50% .134 242.749);--sidebar-primary:oklch(50% .134 242.749);--sidebar-primary-foreground:var(--nova-white)}
+.chart-teal{--primary:oklch(51.1% .096 186.391);--primary-foreground:var(--nova-white);--ring:oklch(51.1% .096 186.391);--sidebar-primary:oklch(51.1% .096 186.391);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-teal{--primary:oklch(51.1% .096 186.391);--primary-foreground:var(--nova-white);--ring:oklch(51.1% .096 186.391);--sidebar-primary:oklch(51.1% .096 186.391);--sidebar-primary-foreground:var(--nova-white)}
+.chart-violet{--primary:oklch(49.1% .27 292.581);--primary-foreground:var(--nova-white);--ring:oklch(49.1% .27 292.581);--sidebar-primary:oklch(49.1% .27 292.581);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-violet{--primary:oklch(49.1% .27 292.581);--primary-foreground:var(--nova-white);--ring:oklch(49.1% .27 292.581);--sidebar-primary:oklch(49.1% .27 292.581);--sidebar-primary-foreground:var(--nova-white)}
+.chart-yellow{--primary:oklch(85.2% .199 91.936);--primary-foreground:var(--nova-white);--ring:oklch(85.2% .199 91.936);--sidebar-primary:oklch(85.2% .199 91.936);--sidebar-primary-foreground:var(--nova-white)}
+.dark.chart-yellow{--primary:oklch(85.2% .199 91.936);--primary-foreground:var(--nova-white);--ring:oklch(85.2% .199 91.936);--sidebar-primary:oklch(85.2% .199 91.936);--sidebar-primary-foreground:var(--nova-white)}
+
+/* ---------- Apps 模块"已连接"语义色(apps 模块消费;跟随 dark 主题) ---------- */
+:root {
+  --ap-connect-border: rgb(147 197 253);
+  --ap-connect-bg: rgb(239 246 255);
+  --ap-connect-bg-hover: rgb(219 234 254);
+}
+.dark {
+  --ap-connect-border: rgb(29 78 216);
+  --ap-connect-bg: rgb(23 37 84);
+  --ap-connect-bg-hover: rgb(30 58 138);
+}
+
+/* ---------- 菜单颜色:反色(menu-color-inverted) ----------
+ * 与当前主题相反:light 下侧边栏为深色、dark 下为浅色;
+ * 色值取自 base-zinc 的 dark/light 定义,追加在末尾以覆盖 base-*/chart-* 的同名变量。 */
+.menu-color-inverted {
+  --sidebar: oklch(21% .006 285.885);
+  --sidebar-foreground: oklch(98.5% 0 0);
+  --sidebar-border: oklch(100% 0 0 / .1);
+  --sidebar-accent: oklch(27.4% .006 286.033);
+  --sidebar-accent-foreground: oklch(98.5% 0 0);
+  --sidebar-primary: oklch(92% .004 286.32);
+  --sidebar-primary-foreground: oklch(21% .006 285.885);
+  --sidebar-ring: oklch(55.2% .016 285.938);
+}
+.dark.menu-color-inverted {
+  --sidebar: oklch(98.5% 0 0);
+  --sidebar-foreground: oklch(14.1% .005 285.823);
+  --sidebar-border: oklch(92% .004 286.32);
+  --sidebar-accent: oklch(96.7% .001 286.375);
+  --sidebar-accent-foreground: oklch(21% .006 285.885);
+  --sidebar-primary: oklch(21% .006 285.885);
+  --sidebar-primary-foreground: oklch(98.5% 0 0);
+  --sidebar-ring: oklch(70.5% .015 286.067);
+}
+
+/* ---------- 菜单外观:半透明(menu-appearance-translucent) ----------
+ * 侧边栏背景半透明 + 毛玻璃;floating 悬浮布局下效果最明显。 */
+.menu-appearance-translucent [data-slot="sidebar-inner"] {
+  background: color-mix(in oklab, var(--sidebar) 72%, transparent);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
