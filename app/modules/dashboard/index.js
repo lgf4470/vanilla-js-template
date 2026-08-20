@@ -113,6 +113,15 @@
     return (v || '').trim();
   }
 
+  /** 圆角设置(--radius)换算为 px,供 Chart.js 的 borderRadius / cornerRadius 使用 */
+  function radiusPx() {
+    var m = cssVar('--radius').match(/([\d.]+)(px|rem)?/);
+    if (!m) return 8;
+    var n = parseFloat(m[1]);
+    if (m[2] === 'rem') n *= 16;
+    return Math.round(n);
+  }
+
   function chartColors() {
     return {
       primary: cssVar('--primary'),
@@ -135,7 +144,7 @@
       bodyColor: colors.muted,
       borderColor: colors.border,
       borderWidth: 1,
-      cornerRadius: 8,
+      cornerRadius: radiusPx(),
       padding: 8,
       boxPadding: 4,
       displayColors: false,
@@ -160,7 +169,7 @@
               return d.total;
             }),
             backgroundColor: colors.primary,
-            borderRadius: 4,
+            borderRadius: radiusPx(),
             borderSkipped: false,
             maxBarThickness: 42,
           },
