@@ -35,7 +35,7 @@
 ├── server/
 │   ├── app.js                 # Web Request → Node 风格 API handler
 │   ├── core/                  # API、鉴权、安全、HTTP、日志、环境
-│   ├── db/                    # schema、scope、适配器工厂与 adapters/
+│   ├── db/                    # schema、scope、resolver/migrate、适配器工厂与 adapters/
 │   ├── modules/               # auth、settings、apihub 路由与服务
 │   ├── adapters/              # Node、Vercel、Cloudflare、Deno 入口
 │   └── package.json           # 仅声明 server/ 内部使用 CommonJS
@@ -74,7 +74,7 @@ critical.css
 
 - 桌面端使用固定侧边栏 + 顶栏 + 主内容区；
 - 移动端由 `app/core/interactions.js` 创建抽屉侧边栏；
-- 内容区使用唯一的 `overflow-y-auto` 视口；
+- 内容区使用唯一的页面级 `overflow-y-auto` 视口（`[data-slot="scroll-area-viewport"]`）；工作台式模块（apihub、settings）可在模块内部使用独立滚动容器（见 3.5）；
 - 所有按钮、下拉、Sheet、Toast 和确认交互由公共 UI/class 生成器与事件委托完成，不使用浏览器默认弹窗或默认下拉视觉。
 
 ### 2.3 模块契约与懒加载
@@ -122,11 +122,33 @@ Docs 和 Settings 的子模块使用 `sub/<id>.js` 并调用 `App.defineModule({
 
 ## 3. 样式系统
 
+### 3.1 样式分层
+
 `app/styles/tokens.css` 保留迁移模板的完整设计系统（Nova/shadcn 视觉语言、8 套风格、色板、暗色模式和组件规则）；`semantic-tokens.css` 提供迁移层的语义 token；`utilities.css` 保留模板补丁工具类；`critical.css` 只负责首帧基础布局与启动错误显示。
 
-新增视觉规则必须优先使用模板已有 CSS token 和 utility class。不要在模块中新增硬编码颜色、圆角或间距；新公共 UI 能力必须遵循 `AGENTS.md` 的键盘可达性、暗色模式和滚动约束。
+### 3.2 token 消费规则
+
+新增视觉规则必须优先使用模板已有 CSS token 和 utility class。不要在模块中新增硬编码颜色或圆角；颜色/圆角缺失的 token 先补到 `tokens.css` 再消费，`just lint` 强制检查（含 CSS）。间距优先使用 `--spacing` 刻度（`calc(var(--spacing) * N)`），新增代码不得写死 rem/px 间距。新公共 UI 能力必须遵循 `AGENTS.md` 的键盘可达性、暗色模式和滚动约束。
+
+### 3.3 主题状态
 
 主题状态使用 `html.dark` 与 `style-*`、`base-*`、`chart-*`、`menu-*` class 组合，`App.settings.applySettings()` 负责把白名单值应用到根节点。
+
+### 3.4 模块样式作用域
+
+模块私有样式以模块前缀限定（settings 用 `.sp-*`、apihub 用 `.hub-*` 等），随模块懒加载注入，只影响本模块；需要影响壳层容器时用 `[data-content-area]:has(...)` 限定生效页面（如 apihub、settings 的工作台铺满视口）。
+
+### 3.5 滚动
+
+页面级滚动只由壳层 `[data-slot="scroll-area-viewport"]` 承担；工作台式多栏布局（apihub、settings）允许在模块内部使用独立 `overflow-y: auto` 容器（左右栏各自独立滚动），禁止引入第二个页面级滚动视口（`html`/`body`/`#app` 不滚动）。
+
+### 3.6 反留白铁律（信息展示类组件）
+
+涉及卡片、列表项等信息展示组件必须遵守：
+
+- 默认内边距使用 `--spacing-3`（`calc(var(--spacing) * 3)`）；
+- 数值类信息必须配图标（`App.icon.iconSvg(...)`）；
+- 空状态必须有图标 + 引导文案，禁止只有一行灰字。
 
 ## 4. 后端架构
 
@@ -143,7 +165,7 @@ Docs 和 Settings 的子模块使用 `sub/<id>.js` 并调用 `App.defineModule({
 
 ### 4.2 API 路由与鉴权
 
-`server/core/api.js` 汇总 `auth`、`settings` 和 `apihub` 路由，并为所有非登录接口执行会话门禁。路由文件只负责参数读取、状态码和调用 service；API Hub 的公开路由、Bearer、全局密码与 API Key 策略由 `server/modules/apihub/service.js` 统一计算。
+`server/core/api.js` 汇总 `auth`、`settings` 和 `apihub` 路由，并为所有非登录接口执行会话门禁。路由文件只负责参数读取、状态码和调用 service；API Hub 的公开路由、Bearer、全局密码与 API Key 策略由 `server/modules/apihub/service.js` 统一计算。（现有 `auth` / `settings` 路由仍内联少量 SQL，属历史实现；新增路由按 routes 薄 + service 拆分约定编写。）
 
 公开接口只有 `POST /api/auth/login`，原因是它是换取会话令牌的入口；其余管理接口默认需要 `x-auth-token`。登录密码来自 `AUTH_PASSWORD`，不会写入数据库。服务端生成随机会话令牌，数据库只写入 `auth_sessions.token_hash`、过期时间和选项；客户端按 `localStorage` 或 `sessionStorage` 保存令牌。
 
@@ -157,17 +179,34 @@ Docs 和 Settings 的子模块使用 `sub/<id>.js` 并调用 `App.defineModule({
 | `turso` | `server/db/adapters/turso.adapter.js` | Vercel、Deno 或远程部署 |
 | `d1` | `server/db/adapters/d1.adapter.js` | Cloudflare D1 或 D1 REST |
 
-所有适配器提供 `query(sql, params)`、`get(sql, params)`、`run(sql, params)` 与 `initSchema(schema)`。schema 位于 `server/db/schema.js`，所有值使用参数绑定；业务 SQL 不允许字符串拼接参数。
+所有适配器提供 `query(sql, params)`、`get(sql, params)`、`run(sql, params)` 与 `initSchema(schema)`。schema 位于 `server/db/schema.js`（唯一事实来源，`CREATE TABLE IF NOT EXISTS` 幂等），所有值使用参数绑定；业务 SQL 不允许字符串拼接参数。命令行脚本（`db:migrate` / `db:reset` / `db:seed`）经 `server/db/resolver.js`（`{ driver, db }` 薄封装）与 `server/db/migrate.js`（幂等 `ensureMigrated`）使用同一入口。
 
 `app_settings` 使用 `(workspace_id, key)` 复合主键。`server/db/scope.js` 规定只有 `settings:workspaces` 和 `settings:activeWorkspace` 写入 `global`，其余设置按当前工作空间写入。API Hub 的 `apihub_config`、`apihub_history`、`apihub_logs` 也包含工作空间字段。
 
 ### 4.4 敏感数据
 
-`server/core/security/` 提供敏感键判断和 AES-256-GCM 封装。邮箱、API Key、Token、secret、credential 等可回显敏感值在 `app_settings` 或 API Hub secrets 写入前加密；读取时只在已鉴权响应中解密。`ENCRYPTION_KEY` 是 64 位 hex 的 32 字节主密钥；本地未配置时可生成 `server/.secret-key`，生产环境必须显式配置并安全保管。
+`server/core/security/` 提供敏感键判断和 AES-256-GCM 封装。敏感值在 `app_settings` 或 API Hub secrets 写入前加密（存储格式 `enc:v1:<iv_b64url>:<tag_b64url>:<ct_b64url>`，见 `server/core/security/core.js`）；读取时只在已鉴权响应中解密。`ENCRYPTION_KEY` 是 64 位 hex 的 32 字节主密钥；本地未配置时可生成 `server/core/.secret-key`，生产环境必须显式配置并安全保管。敏感字段完整清单见 4.6 节。
 
 ### 4.5 日志与静态资源
 
 `server/core/logging/logger.js` 提供服务端日志；API Hub 对请求历史和访问日志进行工作空间隔离、保留期和数量限制。`server/core/http/static.js` 只允许 `/`、`/index.html`、`/app/` 与 `/public/`，并阻断目录穿越、数据库、环境文件和服务端源码暴露；公开资源提供 MIME、安全头、ETag 和缓存策略。
+
+### 4.6 敏感字段清单
+
+以下字段属敏感字段，落库前必须经 `server/core/security/index.js` 的 `encrypt` 封装（`TEXT` 列存 `enc:v1:` 密文），读取时由路由层 `decrypt` 后才返回：
+
+- 用户信息：邮箱、姓名、用户名、性别、年龄、电话、地址；
+- 凭证类：API Key、Token、secret、credential；
+- 需要落库的数据库连接凭证等。
+
+新增涉及敏感字段的表/接口前，先确认加密方案，不确定就询问，禁止自行明文实现。
+
+### 4.7 缓存分层
+
+- API JSON 响应统一 `Cache-Control: no-store`（`server/core/http/json.js`），避免会话数据被中间层缓存；
+- 静态资源按路径类型设置缓存策略（`server/core/http/static.js` 的 `cacheControl`，含 ETag 协商）；
+- 只读 `GET` 接口如需自定义缓存，须在路由层显式设置并说明理由，避免每次击穿到 DB；
+- API Hub 历史与访问日志有数量上限和保留期限制。
 
 ## 5. 构建与体积预算
 
@@ -203,6 +242,23 @@ npm test
 npm run i18n:check
 npm run build
 npm run build:budget
+npm run db:migrate   # 幂等迁移（schema.js 自动建表）
+npm run db:seed      # 写入演示设置数据（本地 SQLite）
 ```
 
 所有迁移后的前端与后端文件必须通过这些检查；不要用忽略规则掩盖语法错误、禁用浏览器默认控件或依赖体积问题。
+
+## 8. Commit Message 规范
+
+遵循 Conventional Commits：
+
+```text
+<type>(<scope>): <简短描述>
+
+- <逐文件说明改动，精确到新增/修改了哪个方法或组件>
+- <一次提交只做一件语义完整的事>
+```
+
+- `type` ∈ `feat|fix|refactor|perf|style|docs|test|build|ci|chore`；
+- 正文必须逐文件列出改动，禁止"优化了某模块"这类无法回溯的粗粒度描述；
+- 示例：`fix(settings): 设置页左右两栏独立滚动并收紧布局`，正文逐文件说明 `module.css` 与 `app.js` 的具体改动。

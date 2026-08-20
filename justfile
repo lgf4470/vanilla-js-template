@@ -1,4 +1,4 @@
-# Freebuff Nova — 开发命令面（与 ARCHITECTURE.md 第 6 节保持一致）
+# Freebuff Nova — 开发命令面（与 ARCHITECTURE.md 第 7 节验证命令保持一致）
 # 所有命令均为零依赖：直接调用 node，或经 npx 临时调用平台官方 CLI。
 
 set shell := ["bash", "-uc"]

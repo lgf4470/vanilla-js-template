@@ -1,7 +1,7 @@
 # ADR-001: 不用任何前端框架，改用原生 Web Components
 
-- 状态：已采纳
-- 日期：2025-01
+- 状态：已废弃（实现未按此落地；UI 实际为 `app/components/ui/` 的 `App.ui.*` 函数式 HTML 渲染，见 ARCHITECTURE.md 2.3 与 AGENTS.md 4.3）
+- 日期：2025-01（废弃于 2026-08）
 
 ## 背景
 项目硬约束为"零第三方运行时依赖"（`package.json` 的 dependencies/devDependencies 恒为空）。
