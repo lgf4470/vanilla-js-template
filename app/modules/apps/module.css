@@ -153,19 +153,12 @@
   color: var(--accent-foreground);
 }
 .ap-connect-on {
-  border-color: rgb(147 197 253);
-  background: rgb(239 246 255);
+  border-color: var(--ap-connect-border);
+  background: var(--ap-connect-bg);
   color: var(--foreground);
 }
 .ap-connect-on:hover {
-  background: rgb(219 234 254);
-}
-html.dark .ap-connect-on {
-  border-color: rgb(29 78 216);
-  background: rgb(23 37 84);
-}
-html.dark .ap-connect-on:hover {
-  background: rgb(30 58 138);
+  background: var(--ap-connect-bg-hover);
 }
 .ap-card h2 {
   font-weight: 600;
