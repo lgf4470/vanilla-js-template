@@ -7,60 +7,60 @@
 ## 1. 硬性红线（不可协商，违反即视为错误提交）
 
 1. **禁止安装任何第三方运行时依赖**。`package.json` 的 `dependencies` / `devDependencies` 必须始终为 `{}`。平台部署 CLI（`wrangler` `vercel` `deno` `docker`）作为外部工具通过 `npx <cli>@version` 临时调用，不写入依赖字段。
-2. **禁止使用浏览器内置弹窗/控件默认视觉**：`window.alert()` `window.confirm()` `window.prompt()`、原生 `<dialog>`/`<select>` 默认样式一律禁止，必须使用 `app/components/ui/` 下的 `<ui-dialog>` `<ui-confirm>` `<ui-toast>` `<ui-select>` 等自研组件。
-3. **禁止硬编码颜色/圆角/间距字面量**。样式一律通过 `app/styles/tokens.css` 定义的 CSS 变量消费，新增视觉样式前先检查 token 是否已存在，缺失则先在 `tokens.css` 补充，而不是在组件里写死数值。
-4. **禁止跨模块直接 import**。`app/modules/<A>` 不得 import `app/modules/<B>` 内部任何文件（含 `components/` `store.js` `api.js`）。确需复用，先把代码"上移"到 `app/components/ui`（组件）或 `shared/`（纯函数/常量），再各自引用。
-5. **禁止在 `<app-sidebar>` / `<app-header>` 之外新增滚动区域**。仅 `<app-main>` 可以 `overflow-y: auto`。
+2. **禁止使用浏览器内置弹窗/控件默认视觉**：`window.alert()` `window.confirm()` `window.prompt()`、原生 `<dialog>`/`<select>` 默认样式一律禁止，必须使用 `app/components/ui/` 的自研组件（`App.ui.*` 函数式渲染：`buttonClass` `dropdownContentClass` `toast` `radio` 等，见 `ARCHITECTURE.md` 2.3）。
+3. **禁止硬编码颜色/圆角/间距字面量**。颜色与圆角一律通过 `app/styles/tokens.css` 定义的 CSS 变量消费，新增视觉样式前先检查 token 是否已存在，缺失则先在 `tokens.css` 补充（颜色由 `just lint` 强制检查，含 CSS）；间距优先使用 `--spacing` 刻度（`calc(var(--spacing) * N)`），新增代码不得写死 rem/px 间距。
+4. **禁止跨模块直接 import**。`app/modules/<A>` 不得 import `app/modules/<B>` 内部任何文件。确需复用，先把代码"上移"到 `app/components/ui`（组件/渲染函数）或 `shared/`（纯函数/常量），再各自引用。
+5. **页面级滚动只由壳层承担**：`html`/`body`/`#app` 不滚动，唯一的页面级滚动视口是壳层 `[data-slot="scroll-area-viewport"]`（`overflow-y: auto`）。业务模块如需工作台式多栏布局（如 apihub、settings），可在模块内部使用独立 `overflow-y: auto` 容器，但不得引入第二个页面级滚动视口。
 6. **新增业务模块禁止修改壳层文件**（`app/components/layout/*`、`app/core/router.js`、`app/core/bootstrap.js`）。唯一允许改动的登记点是 `app/modules/registry.js` 新增一行。
-7. **SQL 一律参数化，禁止字符串拼接拼 SQL**。查询语句集中写在 `server/db/query/<module>.queries.js`。
+7. **SQL 一律参数化，禁止字符串拼接拼 SQL**（参数统一经适配器绑定，见 `ARCHITECTURE.md` 4.3）。
 8. **敏感字段禁止明文入库**（清单见 `ARCHITECTURE.md` 4.6 节：用户信息、API Key、Token、需要落库的数据库凭证等）。新增涉及敏感字段的表/接口前，先确认加密/哈希方案，不确定就询问而不是自行明文实现。
 9. **禁止引入 ORM 或查询构建器依赖**，保持 SQL-first。
-10. **DB 迁移文件只增不改**：已合并的 `server/db/migrations/*.sql` 禁止修改，新变更一律新建下一个序号的迁移文件。
+10. **建表 SQL 单一来源、只增不改**：`server/db/schema.js` 是唯一事实来源，新表只追加 `CREATE TABLE IF NOT EXISTS`（幂等）；旧结构迁移在适配器 `migrateAppSettings` / `migrateAuthSessions` 中幂等执行，不得修改已合并的迁移逻辑。
 
 ---
 
 ## 2. 新增一个"模块"（侧边栏一级菜单）标准流程
 
-1. 新建 `app/modules/<id>/`，包含 `module.config.js` `index.js` `store.js` `api.js` `components/` `locales/{zh-CN,zh-TW,en}.json`；
-2. `module.config.js` 按 `ARCHITECTURE.md` 3.2 节的 `ModuleManifest` 形状导出清单（id / icon / order / i18nNamespace / loadRoot / submodules）；
+1. 新建 `app/modules/<id>/`，包含 `module.config.js` `index.js` `module.css` `i18n.js`（子模块另建 `sub/`）；
+2. `module.config.js` 按 `ARCHITECTURE.md` 2.3 节的 `ModuleManifest` 形状导出清单（id / icon / order / i18nNamespace / loadRoot / load / css / i18nFile / submodules）；
 3. 在 `app/modules/registry.js` 补一行 `import()` 登记；
-4. 新建 `server/modules/<id>/routes.js` + `service.js`，在 `server/app.js` 的路由汇总处登记（同样只加一行，不改其它模块路由）；
-5. 若需要新表：新建 `server/db/migrations/000N_<module>_init.sql`，表名遵循 `[module]_[entity]`；
-6. 补齐三语言 `locales/*.json`，跑 `just i18n:check` 确认三语言 key 对齐；
+4. 新建 `server/modules/<id>/routes.js`（必要时配 `service.js`），在 `server/core/api.js` 的路由汇总处登记（同样只加一行，不改其它模块路由）；
+5. 若需要新表：在 `server/db/schema.js` 追加 `CREATE TABLE IF NOT EXISTS`，表名遵循 `[module]_[entity]`；
+6. 在 `i18n.js` 补齐三语言（`en` / `zh-CN` / `zh-TW` 三个对象），跑 `just i18n:check` 确认三语言 key 对齐；
 7. 补单元测试（源码同目录 `*.test.js`），跑 `just test`；
 8. 跑 `just lint` 与 `just build:budget` 确认不超体积预算；
 9. 提交前对照第 9 节"提交前自检清单"。
 
 ## 3. 新增一个"子模块"（二级菜单）标准流程
 
-同上，目录改为 `app/modules/<parent>/submodules/<sub-id>/`，`module.config.js` 中父模块的 `submodules` 数组补一项；后端路由放 `server/modules/<parent>/submodules/<sub-id>/`；子模块与同级其它子模块之间同样禁止相互 import。
+同上，实现文件放 `app/modules/<parent>/sub/<id>.js`（调用 `App.defineModule({ id, sub, render })`），`module.config.js` 中父模块的 `submodules` 数组补一项；子模块纯前端渲染，无独立后端路由；子模块与同级其它子模块之间同样禁止相互 import。
 
 ## 4. 新增/复用 UI 组件规范
 
 - 先搜索 `app/components/ui/` 是否已有可复用组件，**禁止在模块私有目录重复造已存在的基础组件**（按钮、卡片、弹窗、输入框、下拉、Tabs 等）；
 - 只有明确"仅本模块使用、不具备通用性"的组件才放在模块的 `components/` 目录；
-- 新建公共组件必须：使用 Shadow DOM、只消费 token 变量（不硬编码视觉数值）、支持键盘可达性（Tab/Enter/Esc）、在 light/dark 两套 `data-theme` 下自测；
+- 新建公共组件必须：沿用 `App.ui` 函数式渲染（返回 HTML 字符串，不使用 Shadow DOM）、只消费 token 变量（不硬编码视觉数值）、支持键盘可达性（Tab/Enter/Esc）、在 light/dark 两套主题下自测；
 - 涉及信息展示类组件（卡片、列表项等）必须遵循 `ARCHITECTURE.md` 3.6 节"反留白铁律"：默认使用 `--spacing-3`、数值类信息配图标、空状态必须有图标+引导文案。
 
 ## 5. 数据库变更规范
 
 - 新表命名：`[module]_[entity]`，子模块专属表：`[module]_[submodule]_[entity]`；
 - 全局配置一律走 `app_settings`，key 命名 `domain:subject[:field]`（如 `settings:profile`、`accounts:webdav`），**不要为全局配置新建专用表**；
-- 涉及敏感字段：先在迁移文件中确认字段类型为 `TEXT`（存放加密后的 base64 密文，格式 `iv:ciphertext`），并在 `service.js` 里显式调用 `server/core/crypto.js` 的加解密封装，**不允许绕过封装直接读写敏感字段**；
-- 每个迁移文件只做一件事，文件名 `000N_<简述>.sql`，N 严格递增，不允许并列/重号（提交前 rebase 检查）。
+- 涉及敏感字段：确认 `schema.js` 中字段类型为 `TEXT`（存放密文，格式 `enc:v1:<iv>:<tag>:<ct>`，见 `ARCHITECTURE.md` 4.4），读写必须显式调用 `server/core/security/index.js` 的 `encrypt` / `decrypt` 封装，**不允许绕过封装直接读写敏感字段**；
+- `schema.js` 只追加不修改（`CREATE TABLE IF NOT EXISTS` 幂等），旧结构迁移逻辑（`migrateAppSettings` / `migrateAuthSessions`）不得改动已合并行为。
 
 ## 6. API 路由新增规范
 
-- 路由放在对应模块的 `routes.js`，业务逻辑放 `service.js`，**路由函数本身不写 SQL / 不写加解密逻辑**，只做参数校验 + 调用 service；
-- 所有需要鉴权的路由默认经过 `server/core/middleware.js` 的 `X-Auth-Password` 校验，公开路由需显式标注并说明理由；
+- 路由放在对应模块的 `routes.js`，业务逻辑放 `service.js`，**路由函数本身不写 SQL / 不写加解密逻辑**，只做参数校验 + 调用 service（现有 `auth` / `settings` 路由内联 SQL 属历史实现，新增路由遵循此约定）；
+- 所有需要鉴权的路由默认经过 `server/core/api.js` 的会话门禁（`x-auth-token`）校验，公开路由需显式标注并说明理由；
 - 只读 `GET` 接口需要考虑是否设置 `Cache-Control`（见 `ARCHITECTURE.md` 4.7 节缓存分层），避免每次都击穿到 DB。
 
 ## 7. i18n 新增文案流程
 
-1. 在对应模块 `locales/zh-CN.json` 新增 key（命名空间 `<module>.<scope>.<name>`）；
-2. 同步补齐 `zh-TW.json` 与 `en.json` 的同一 key；
-3. 跑 `just i18n:check`，确认三份文件 key 集合完全一致，缺一个都视为失败；
-4. 壳层通用文案（按钮、通用提示等）改 `app/locales/*.json`，命名空间 `common.*`。
+1. 在对应模块 `i18n.js` 的 `window.__moduleI18n['<id>']` 中新增 key（命名空间 `<module>.<scope>.<name>`）；
+2. 同步补齐 `en` / `zh-CN` / `zh-TW` 三个语言对象的同一 key；
+3. 跑 `just i18n:check`，确认三语言 key 集合完全一致，缺一个都视为失败（脚本已覆盖模块 `i18n.js`）；
+4. 壳层通用文案（按钮、通用提示等）改 `app/core/i18n.js`，命名空间 `sidebar.*` / `settings.*` 等。
 
 ## 8. 性能与体积自检
 
@@ -77,7 +77,7 @@
 - [ ] `just build:budget` 通过（未超体积预算）
 - [ ] 涉及新模块/子模块：`registry.js` 已登记，且未触碰壳层文件
 - [ ] 涉及敏感字段：已走加解密封装，未明文入库
-- [ ] 涉及 SQL：已参数化，查询集中在 `query/*.queries.js`
+- [ ] 涉及 SQL：已参数化（无字符串拼接）
 - [ ] 涉及 UI：未使用 `window.alert/confirm/prompt`，样式全部走 token
 - [ ] 涉及信息卡片类 UI：已核对"反留白铁律"
 - [ ] Commit message 符合 Conventional Commits 且正文逐文件说明改动（见第 10 节）

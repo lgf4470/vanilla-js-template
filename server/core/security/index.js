@@ -18,11 +18,10 @@ const path = require('path');
 const { encryptWithKey, decryptWithKey } = require('./core');
 const log = require('../logging/logger');
 
-// 保持 server/.secret-key 位置不变:已被 .gitignore / .dockerignore /
-// .vercelignore / .assetsignore 与 Deno 部署工作流统一排除。
+// 密钥文件位置固定为 server/core/.secret-key:已被 .gitignore(其他敏感文件)排除。
 const KEY_FILE = path.resolve(__dirname, '..', '.secret-key');
 
-/** 获取 32 字节密钥:ENCRYPTION_KEY 优先,否则读取/生成 server/.secret-key */
+/** 获取 32 字节密钥:ENCRYPTION_KEY 优先,否则读取/生成 server/core/.secret-key */
 function getEncryptionKey(env = process.env) {
   const fromEnv = (env || process.env).ENCRYPTION_KEY;
   if (fromEnv) {
