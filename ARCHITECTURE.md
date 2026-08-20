@@ -176,7 +176,7 @@ Docs 和 Settings 的子模块使用 `sub/<id>.js` 并调用 `App.defineModule({
 
 | 驱动 | 文件 | 场景 |
 |---|---|---|
-| `sqlite` | `server/db/adapters/sqlite.adapter.js` | Node ≥ 22 本地开发与 Docker |
+| `sqlite` | `server/db/adapters/sqlite.adapter.js` | Node ≥ 22.5（推荐 ≥ 23.4）本地开发与 Docker |
 | `turso` | `server/db/adapters/turso.adapter.js` | Vercel、Deno 或远程部署 |
 | `d1` | `server/db/adapters/d1.adapter.js` | Cloudflare D1 或 D1 REST |
 
