@@ -211,7 +211,7 @@ Docs 和 Settings 的子模块使用 `sub/<id>.js` 并调用 `App.defineModule({
 
 ## 5. 构建与体积预算
 
-`npm run build` 执行 `scripts/build.js`：清理并复制 `index.html`、`app/`、`public/`、`shared/` 到 `dist/`，删除测试文件，对 JS/CSS 做零依赖安全压缩，并保持动态脚本路径不变。
+`npm run build` 执行 `scripts/build.js`：清理并复制 `index.html`、`app/`、`public/` 到 `dist/`（`shared/` 是前后端共享常量的预留目录，当前无运行时引用，不复制），删除测试文件，对 JS/CSS 做零依赖安全压缩，并保持动态脚本路径不变。
 
 `npm run build:budget` 的阈值为：
 

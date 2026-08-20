@@ -9,7 +9,8 @@ import { join, resolve } from 'node:path';
 
 const ROOT = resolve(join(import.meta.dirname, '..'));
 const DIST = join(ROOT, 'dist');
-const COPY_ITEMS = ['index.html', 'app', 'public', 'shared'];
+const COPY_ITEMS = ['index.html', 'app', 'public'];
+// 说明：shared/ 是前后端共享常量的预留目录，当前无任何运行时引用，不复制进 dist/（避免死重量）。
 
 function charCode(char) {
   return char ? char.charCodeAt(0) : 0;
