@@ -48,17 +48,20 @@ function checkSyntax(file) {
 }
 
 function checkBanned(file) {
-  if (!file.endsWith('.js')) return;
+  const isJs = file.endsWith('.js');
+  if (!isJs && !file.endsWith('.css')) return;
   // lint 自身必然包含禁用模式字样，跳过自检
   if (file.endsWith('scripts/lint.js')) return;
   const src = readFileSync(file, 'utf8');
-  for (const { re, msg } of BANNED_PATTERNS) {
-    if (msg.includes('console.log') && !file.startsWith(join(ROOT, 'app'))) continue;
-    const m = src.match(re);
-    if (m) errors.push(`${msg} → ${rel(file)}:${lineOf(src, m.index)}`);
-  }
-  if (src.includes('\t')) {
-    errors.push(`禁止 Tab 缩进 → ${rel(file)}`);
+  if (isJs) {
+    for (const { re, msg } of BANNED_PATTERNS) {
+      if (msg.includes('console.log') && !file.startsWith(join(ROOT, 'app'))) continue;
+      const m = src.match(re);
+      if (m) errors.push(`${msg} → ${rel(file)}:${lineOf(src, m.index)}`);
+    }
+    if (src.includes('\t')) {
+      errors.push(`禁止 Tab 缩进 → ${rel(file)}`);
+    }
   }
   // 样式硬编码颜色检查（app/ 下 JS 内嵌样式与 CSS 文件）。
   // token 样式表与模板随附的静态 SVG/Chart.js 资源本身就是颜色定义，
