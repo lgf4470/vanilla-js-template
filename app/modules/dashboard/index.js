@@ -120,6 +120,10 @@
       border: cssVar('--border'),
       popover: cssVar('--popover'),
       foreground: cssVar('--foreground'),
+      // 强调色系列(--chart-*):主题设置"强调色"选择后随之变化
+      chart1: cssVar('--chart-1'),
+      chart2: cssVar('--chart-2'),
+      chart3: cssVar('--chart-3'),
     };
   }
 
@@ -220,8 +224,9 @@
           return d.name;
         }),
         datasets: [
+          // 主序列用强调主色(--primary 跟随强调色),对比序列用强调色浅变体(--chart-2)
           dataset('clicks', 'Clicks', colors.primary),
-          dataset('uniques', 'Uniques', colors.muted),
+          dataset('uniques', 'Uniques', colors.chart2 || colors.muted),
         ],
       },
       options: {
