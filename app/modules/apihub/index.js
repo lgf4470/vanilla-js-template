@@ -747,11 +747,11 @@
       desc: msg,
       body: '',
       foot:
-        '<button type="button" class="hub-btn hub-btn-outline" data-hub-dlg-close>' +
+        '<button type="button" class="' + App.ui.buttonClass('outline') + '" data-hub-dlg-close>' +
         t('apihub.cancel') +
         '</button>' +
-        '<button type="button" class="hub-btn ' +
-        (danger ? 'hub-btn-danger' : 'hub-btn-primary') +
+        '<button type="button" class="' +
+        App.ui.buttonClass(danger ? 'destructive' : 'default') +
         '" data-hub-dlg-ok>' +
         (okLabel || t('apihub.confirm')) +
         '</button>',
@@ -808,10 +808,10 @@
       desc: isDefault ? t('apihub.authDefaultsDesc') : '',
       body: body,
       foot:
-        '<button type="button" class="hub-btn hub-btn-outline" data-hub-dlg-close>' +
+        '<button type="button" class="' + App.ui.buttonClass('outline') + '" data-hub-dlg-close>' +
         t('apihub.cancel') +
         '</button>' +
-        '<button type="button" class="hub-btn hub-btn-primary" data-hub-dlg-ok>' +
+        '<button type="button" class="' + App.ui.buttonClass('default') + '" data-hub-dlg-ok>' +
         t('apihub.save') +
         '</button>',
     });
@@ -932,10 +932,10 @@
       desc: '',
       body: body,
       foot:
-        '<button type="button" class="hub-btn hub-btn-outline" data-hub-dlg-close>' +
+        '<button type="button" class="' + App.ui.buttonClass('outline') + '" data-hub-dlg-close>' +
         t('apihub.cancel') +
         '</button>' +
-        '<button type="button" class="hub-btn hub-btn-primary" data-hub-dlg-ok>' +
+        '<button type="button" class="' + App.ui.buttonClass('default') + '" data-hub-dlg-ok>' +
         t('apihub.save') +
         '</button>',
     });
@@ -2050,7 +2050,7 @@
       '<input type="text" class="hub-req-path" data-hub-reqpath placeholder="/api/..." value="' +
       escAttr(req.path) +
       '" />' +
-      '<button type="button" class="hub-send-btn" data-hub-act="send"' +
+      '<button type="button" class="' + App.ui.buttonClass('default') + '" data-hub-act="send"' +
       (view.running ? ' disabled' : '') +
       '>' +
       icon('send', '') +

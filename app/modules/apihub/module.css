@@ -721,34 +721,6 @@
   border-color: var(--ring);
   box-shadow: 0 0 0 2px color-mix(in oklab, var(--ring) 40%, transparent);
 }
-.hub-send-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.375rem;
-  height: 2rem;
-  padding: 0 0.875rem;
-  border-radius: 0.5rem;
-  border: 0;
-  background: var(--primary);
-  color: var(--primary-foreground);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  cursor: pointer;
-  outline: none;
-  white-space: nowrap;
-}
-.hub-send-btn:hover {
-  background: color-mix(in oklab, var(--primary) 85%, var(--color-black));
-}
-.hub-send-btn:disabled {
-  opacity: 0.55;
-  cursor: default;
-}
-.hub-send-btn svg {
-  width: 0.875rem;
-  height: 0.875rem;
-}
 .hub-tabs {
   display: inline-flex;
   gap: 0.125rem;
@@ -1118,44 +1090,6 @@
   font-weight: 500;
   color: var(--muted-foreground);
 }
-.hub-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.375rem;
-  height: 2rem;
-  padding: 0 0.875rem;
-  border-radius: 0.5rem;
-  border: 1px solid transparent;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  cursor: pointer;
-  outline: none;
-  white-space: nowrap;
-}
-.hub-btn-primary {
-  background: var(--primary);
-  color: var(--primary-foreground);
-}
-.hub-btn-primary:hover {
-  background: color-mix(in oklab, var(--primary) 85%, var(--color-black));
-}
-.hub-btn-outline {
-  border-color: var(--border);
-  background: var(--background);
-  color: var(--foreground);
-}
-.hub-btn-outline:hover {
-  background: var(--accent);
-}
-.hub-btn-danger {
-  background: var(--destructive);
-  color: var(--primary-foreground);
-}
-.hub-btn-danger:hover {
-  opacity: 0.9;
-}
-
 /* ---------- Hub 自定义下拉(分组/标签/鉴权选择,复用 [data-dropdown] 弹层机制) ---------- */
 .hub-dd {
   position: relative;
