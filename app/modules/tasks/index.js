@@ -164,6 +164,7 @@
     pageSize: 10,
     selection: {}, // id → true
     visibility: { title: true, status: true, priority: true },
+    filterVisibility: { status: true, priority: true }, // 过滤下拉控制工具栏过滤器显隐
     dialog: null, // create | update | import | delete | bulk-delete
     currentRow: null,
   };
@@ -247,6 +248,23 @@
   function sortBtn(t, key, label) {
     var s = state.sort;
     var arrow = s.key === key ? (s.dir === 'asc' ? 'arrow-up' : 'arrow-down') : 'chevrons-up-down';
+    // 排序菜单项:默认 | 升序 | 降序 | 隐藏(选中项带勾)
+    var opt = function (value, iconName, optLabel, active) {
+      return (
+        '<button type="button" data-task-sort-opt="' +
+        value +
+        '" data-key="' +
+        key +
+        '" class="' +
+        App.ui.dropdownItemClass() +
+        '">' +
+        icon().iconSvg(iconName, { class: 'size-3.5 text-muted-foreground/70' }) +
+        optLabel +
+        (active ? icon().iconSvg('check', { class: 'ms-auto size-4' }) : '') +
+        '</button>'
+      );
+    };
+    var noneActive = !(s.key === key);
     return (
       '<div class="relative" data-dropdown>' +
       '<button type="button" data-dropdown-trigger data-slot="button" data-task-sort="' +
@@ -260,22 +278,11 @@
       icon().iconSvg(arrow, { class: 'size-3.5' }) +
       '</button>' +
       '<div data-dropdown-menu class="' +
-      App.ui.dropdownContentClass('min-w-40') +
+      App.ui.dropdownContentClass('min-w-44') +
       '">' +
-      '<button type="button" data-task-sort-opt="asc" data-key="' +
-      key +
-      '" class="' +
-      App.ui.dropdownItemClass() +
-      '">' +
-      icon().iconSvg('arrow-up', { class: 'size-3.5 text-muted-foreground/70' }) +
-      'Asc</button>' +
-      '<button type="button" data-task-sort-opt="desc" data-key="' +
-      key +
-      '" class="' +
-      App.ui.dropdownItemClass() +
-      '">' +
-      icon().iconSvg('arrow-down', { class: 'size-3.5 text-muted-foreground/70' }) +
-      'Desc</button>' +
+      opt('default', 'rotate-ccw', t('tasks.sort.default'), noneActive) +
+      opt('asc', 'arrow-up', t('tasks.sort.asc'), s.key === key && s.dir === 'asc') +
+      opt('desc', 'arrow-down', t('tasks.sort.desc'), s.key === key && s.dir === 'desc') +
       App.ui.dropdownSeparator() +
       '<button type="button" data-task-hide-col data-key="' +
       key +
@@ -283,7 +290,8 @@
       App.ui.dropdownItemClass() +
       '">' +
       icon().iconSvg('eye-off', { class: 'size-3.5 text-muted-foreground/70' }) +
-      'Hide</button>' +
+      t('tasks.sort.hide') +
+      '</button>' +
       '</div></div>'
     );
   }
@@ -432,6 +440,53 @@
     );
   }
 
+  function filterToggleBtn(t) {
+    var kinds = [
+      { key: 'status', label: t('tasks.filter.status') },
+      { key: 'priority', label: t('tasks.filter.priority') },
+    ];
+    return (
+      '<div class="relative" data-dropdown>' +
+      '<button type="button" data-dropdown-trigger data-task-filter-toggle data-slot="button" class="' +
+      App.ui.buttonClass('outline', 'sm', 'hidden h-8 lg:inline-flex') +
+      '">' +
+      icon().iconSvg('list-filter', { class: 'size-4' }) +
+      t('tasks.filterToggle') +
+      '</button>' +
+      '<div data-dropdown-menu class="' +
+      App.ui.dropdownContentClass('w-48') +
+      '">' +
+      '<div class="' +
+      App.ui.dropdownLabelClass('') +
+      '">' +
+      t('tasks.toggleFilters') +
+      '</div>' +
+      App.ui.dropdownSeparator() +
+      kinds
+        .map(function (k) {
+          var vis = state.filterVisibility[k.key];
+          return (
+            '<button type="button" data-task-filter-toggle-opt="' +
+            k.key +
+            '" class="' +
+            App.ui.dropdownItemClass('') +
+            '">' +
+            '<span class="tk-check' +
+            (vis ? ' is-checked' : '') +
+            '">' +
+            icon().iconSvg('check', { class: 'size-3' }) +
+            '</span>' +
+            '<span class="capitalize">' +
+            k.label +
+            '</span>' +
+            '</button>'
+          );
+        })
+        .join('') +
+      '</div></div>'
+    );
+  }
+
   function toolbarHtml(t) {
     var isFiltered =
       state.search !== '' || state.filterStatus.length || state.filterPriority.length;
@@ -447,8 +502,12 @@
       }) +
       '</div>' +
       '<div class="flex gap-x-2">' +
-      filterBtn(t, 'status', t('tasks.filter.status'), STATUSES) +
-      filterBtn(t, 'priority', t('tasks.filter.priority'), PRIORITIES) +
+      (state.filterVisibility.status
+        ? filterBtn(t, 'status', t('tasks.filter.status'), STATUSES)
+        : '') +
+      (state.filterVisibility.priority
+        ? filterBtn(t, 'priority', t('tasks.filter.priority'), PRIORITIES)
+        : '') +
       '</div>' +
       (isFiltered
         ? '<button type="button" data-task-reset data-slot="button" class="' +
@@ -460,6 +519,7 @@
         : '') +
       '</div>' +
       viewBtn(t) +
+      filterToggleBtn(t) +
       '</div>'
     );
   }
@@ -713,7 +773,7 @@
       '</div>' +
       '<div class="flex items-center gap-1 sm:space-x-1">' +
       '<span class="hidden w-28 text-center text-sm font-medium sm:block">' +
-      t('tasks.pageOf', current, total) +
+      t('tasks.pageOf', current + ' / ' + total) +
       '</span>' +
       '<button type="button" data-task-page="first" class="' +
       btnBase +
@@ -834,7 +894,7 @@
       count +
       '</span>' +
       '<span class="hidden sm:inline">' +
-      t(count > 1 ? 'tasks.tasksSelected' : 'tasks.taskSelected') +
+      t(count > 1 ? 'tasks.tasksSelected' : 'tasks.taskSelected', count) +
       '</span>' +
       '</div>' +
       '<span class="mx-1 h-5 w-px bg-border"></span>' +
@@ -1294,7 +1354,9 @@
     var sortOpt = target.closest('[data-task-sort-opt]');
     if (sortOpt) {
       var key = sortOpt.getAttribute('data-key');
-      state.sort = { key: key, dir: sortOpt.getAttribute('data-task-sort-opt') };
+      var dir = sortOpt.getAttribute('data-task-sort-opt');
+      // 默认:清空该列排序,回到初始顺序(无需刷新页面)
+      state.sort = dir === 'default' ? { key: '', dir: '' } : { key: key, dir: dir };
       state.page = 1;
       rerender();
       return;
@@ -1324,6 +1386,14 @@
       if (idx === -1) arr.push(fv);
       else arr.splice(idx, 1);
       state.page = 1;
+      rerender();
+      return;
+    }
+    // 过滤下拉:切换工具栏过滤器的显隐
+    var filterToggleOpt = target.closest('[data-task-filter-toggle-opt]');
+    if (filterToggleOpt) {
+      var fvk = filterToggleOpt.getAttribute('data-task-filter-toggle-opt');
+      state.filterVisibility[fvk] = !state.filterVisibility[fvk];
       rerender();
       return;
     }
