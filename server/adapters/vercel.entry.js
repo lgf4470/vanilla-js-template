@@ -1,13 +1,23 @@
-/**
- * server/adapters/vercel.entry.js
- * Vercel 入口（Edge/NODE Runtime 均可，标准 Request → Response）。
- * 实际部署入口是 api/server.js（vercel.json 中 rewrite 到 /api/server）。
- */
+'use strict';
 
-import { handleRequest } from '../app.js';
+const { handleRequest } = require('../app');
+const { toWebRequest } = require('./node.entry');
 
-export default async function handler(request) {
-  return handleRequest(request, process.env);
-}
-
-export { handleRequest };
+module.exports = async function vercelHandler(req, res) {
+  try {
+    const response = await handleRequest(toWebRequest(req), process.env);
+    res.statusCode = response.status;
+    response.headers.forEach((value, key) => res.setHeader(key, value));
+    if (req.method === 'HEAD') return res.end();
+    res.end(Buffer.from(await response.arrayBuffer()));
+  } catch (error) {
+    if (!res.headersSent) {
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.end(JSON.stringify({ error: 'internal', message: '服务器内部错误' }));
+    } else {
+      res.end();
+    }
+    console.error('[vercel] API 处理失败:', error);
+  }
+};

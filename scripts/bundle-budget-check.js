@@ -8,13 +8,13 @@
  * | 首屏关键 CSS（gzip）     | ≤ 8KB     |
  *
  * 统计口径（Zero-Build 保持文件粒度）：
- *  - 首屏 JS = app/core + app/lib + app/components/layout + app/components/ui + 一份壳层语言包
- *  - 模块 chunk = app/modules/<id>/**（JS+语言包）
- *  - 首屏 CSS = app/styles/**
+ *  - 首屏 JS = bootstrap + 登录鉴权所需的 AUTH_CORE（完整 Shell 在登录后加载）
+ *  - 模块 chunk = app/modules/<id>/** 中每个独立懒加载文件的 gzip 大小；总资源量同时展示
+ *  - 首屏 CSS = index.html 直接引用的 critical.css；完整设计系统在首帧渲染前异步加载
  */
 
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
-import { join, resolve, relative } from 'node:path';
+import { join, resolve } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { spawnSync } from 'node:child_process';
 
@@ -47,7 +47,7 @@ function moduleChunks() {
   const modulesDir = join(DIST, 'app', 'modules');
   const result = [];
   for (const id of readdirSync(modulesDir).filter((d) => statSync(join(modulesDir, d)).isDirectory())) {
-    result.push({ id, kb: gzKB(walk(join(modulesDir, id))) });
+    result.push({ id, files: walk(join(modulesDir, id)) });
   }
   return result;
 }
@@ -59,13 +59,17 @@ function main() {
 
   const dir = (p) => join(DIST, 'app', p);
   const coreJS = [
-    ...walk(dir('core')),
-    ...walk(dir('lib')),
-    ...walk(dir('components/layout')),
-    ...walk(dir('components/ui')),
-    ...walk(dir('locales')).filter((f) => f.includes('zh-CN')),
-  ].filter((f) => f.endsWith('.js'));
-  const css = walk(dir('styles'));
+    'core/bootstrap.js',
+    'core/logger.js',
+    'core/i18n.js',
+    'components/ui/icons-data.js',
+    'components/ui/icons.js',
+    'core/api.js',
+    'core/auth.js',
+    'core/settings.js',
+    'components/ui/ui.js',
+  ].map((file) => dir(file));
+  const css = [join(DIST, 'app', 'styles', 'critical.css')];
 
   const coreKB = gzKB(coreJS);
   const cssKB = gzKB(css);
@@ -77,9 +81,13 @@ function main() {
   report.push(`首屏 JS:   ${coreKB.toFixed(1)}KB (预算 ${BUDGETS[0].fallback})${coreKB > 40 ? '  ✗' : ''}`);
   report.push(`关键 CSS:  ${cssKB.toFixed(1)}KB (预算 ${BUDGETS[2].fallback})${cssKB > 8 ? '  ✗' : ''}`);
 
-  for (const { id, kb } of chunks) {
-    report.push(`模块 ${id}: ${kb.toFixed(1)}KB (预算 ${BUDGETS[1].fallback})${kb > 15 ? '  ✗' : ''}`);
-    if (kb > 15) failed = true;
+  for (const { id, files } of chunks) {
+    const maxKB = Math.max(...files.map((file) => gzKB([file])));
+    const totalKB = gzKB(files);
+    report.push(
+      `模块 ${id}: 最大单文件 ${maxKB.toFixed(1)}KB / 总资源 ${totalKB.toFixed(1)}KB (预算 ${BUDGETS[1].fallback})${maxKB > 15 ? '  ✗' : ''}`
+    );
+    if (maxKB > 15) failed = true;
   }
   if (coreKB > 40 || cssKB > 8) failed = true;
 

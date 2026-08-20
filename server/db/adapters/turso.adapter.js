@@ -1,109 +1,131 @@
-/**
- * server/db/adapters/turso.adapter.js
- * Turso/libSQL 官方 HTTP(Hrana) 协议直连（fetch + Bearer Token），
- * 不引入 @libsql/client SDK（ARCHITECTURE.md 4.4 节）。
- *
- * 说明：这是最小可用实现——文本型参数映射 + 简单行还原，服务于本项目
- * 已参数化的查询常量；如需扩展类型请在此文件内补充映射，不要绕过适配器写裸请求。
- *
- * @param {{ url: string, token: string }} opts TURSO_DATABASE_URL / TURSO_AUTH_TOKEN
- */
-export function createTursoAdapter({ url, token }) {
-  if (!url || !token) {
-    throw new Error('TURSO_DATABASE_URL / TURSO_AUTH_TOKEN 未配置（使用 Turso 驱动时必须设置）');
+/* ============================================================
+ * db-turso.js — 远程 Turso/libSQL 驱动(HTTP v2 pipeline API)
+ * ------------------------------------------------------------
+ * 通过 libsql server 的 HTTP 接口访问远程数据库(与本地 sqlite 同一接口):
+ *   DB_DRIVER=turso
+ *   DATABASE_URL=https://<db>-<org>.turso.io
+ *   DATABASE_AUTH_TOKEN=<token>
+ * 依赖全局 fetch(Node >= 18)。部署到 Vercel/Cloudflare 时可将
+ * 同样的 SQL 与命名规范用于 D1(新增一个 adapter 即可,见 README)。
+ * 注意:参数绑定按位置数组,args 形状为 [{ type, value }]。
+ * ============================================================ */
+'use strict';
+
+const { migrateAppSettings } = require('../schema');
+
+function init(opts) {
+  const env = (opts && opts.env) || process.env;
+  let baseUrl = (env.DATABASE_URL || '').trim().replace(/\/+$/, '');
+  const token = env.DATABASE_AUTH_TOKEN || '';
+  if (!baseUrl) {
+    throw new Error('[db-turso] 缺少 DATABASE_URL(如 https://<db>-<org>.turso.io)');
   }
+  // Turso 控制台常给 libsql:// 形式(仅驱动原生支持),Node fetch 只认 http(s),
+  // 这里把 libsql:// 归一化为 https://,避免 fetch 抛 "fetch failed"。
+  // (http:// 保留原样,便于本地 libsql dev server 调试。)
+  if (baseUrl.startsWith('libsql://')) {
+    baseUrl = 'https://' + baseUrl.slice('libsql://'.length);
+  }
+  const endpoint = baseUrl + '/v2/pipeline';
 
-  const endpoint = url.replace(/\/+$/, '') + '/v2/pipeline';
-
-  async function pipeline(steps) {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        authorization: `Bearer ${token}`,
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({ baton: null, requests: steps }),
+  function bindArgs(params) {
+    return (params || []).map(function (p) {
+      if (p === null || p === undefined) return { type: 'null', value: null };
+      if (typeof p === 'number') return { type: 'integer', value: p };
+      return { type: 'text', value: String(p) };
     });
-    const data = await res.json().catch(() => null);
-    if (!res.ok || !data || data.error) {
-      throw new Error(data?.error?.message || `Turso request failed (${res.status})`);
+  }
+
+  /** 兼容两种响应形状:
+   *  旧版: { type:'execute', response: { cols, rows: [[v,..],..] } }(裸值)
+   *  新版(Turso 云端当前): { type:'ok', response: { type:'execute', result: { cols, rows: [[{type,value},..],..] } } }
+   */
+  function unwrapValue(v) {
+    if (v && typeof v === 'object' && 'value' in v) {
+      // 新版协议 integer/real 的 value 是字符串,转回数字与旧版行为保持一致
+      if (v.type === 'integer' || v.type === 'real') return Number(v.value);
+      return v.value;
     }
-    return data;
+    return v;
   }
 
-  function argsToHrana(params) {
-    return (params || []).map((p) => ({
-      type: 'text',
-      value: p === null || p === undefined ? '' : String(p),
-    }));
+  function rowsFrom(result) {
+    let resp = result && result.response;
+    if (resp && resp.result) resp = resp.result; // 新版形状
+    if (!resp || !Array.isArray(resp.cols)) return [];
+    return resp.rows.map(function (row) {
+      const obj = {};
+      resp.cols.forEach(function (col, i) {
+        const v = unwrapValue(row[i]);
+        obj[col.name] = v === null ? null : v;
+      });
+      return obj;
+    });
   }
 
-  function rowsToObjects(result) {
-    const cols = result?.cols || [];
-    return (result?.rows || []).map((row) =>
-      Object.fromEntries(cols.map((c, i) => [c.name, row[i]?.value ?? null])),
-    );
-  }
-
-  const adapter = {
-    async query(sql, params = []) {
-      const data = await pipeline([
-        {
-          type: 'execute',
-          stmt: { sql, args: argsToHrana(params) },
-          want_rows: true,
+  async function pipeline(requests) {
+    let r;
+    try {
+      r = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
         },
-      ]);
-      const result = data.results?.[0]?.response?.result;
-      if (result?.error) throw new Error(result.error.message);
-      return rowsToObjects(result);
+        body: JSON.stringify({ requests }),
+      });
+    } catch (e) {
+      // 常见原因:DATABASE_URL 配错 / 网络不通 / libsql:// 未归一化(此处已自动转换)
+      throw new Error('[db-turso] 无法连接 ' + endpoint + ':' + String((e && e.message) || e));
+    }
+    if (!r.ok) {
+      const text = await r.text();
+      throw new Error('[db-turso] HTTP ' + r.status + ': ' + text.slice(0, 300));
+    }
+    const body = await r.json();
+    const results = Array.isArray(body) ? body : body.results;
+    if (!Array.isArray(results)) {
+      throw new Error('[db-turso] 响应格式异常: ' + JSON.stringify(body).slice(0, 300));
+    }
+    return results;
+  }
+
+  return {
+    name: 'turso',
+    path: baseUrl,
+
+    async query(sql, params) {
+      const results = await pipeline([{ type: 'execute', stmt: { sql, args: bindArgs(params) } }]);
+      return rowsFrom(results[0]);
     },
 
-    async execute(sql, params = []) {
-      const data = await pipeline([
-        {
-          type: 'execute',
-          stmt: { sql, args: argsToHrana(params) },
-          want_rows: false,
-        },
-      ]);
-      const result = data.results?.[0]?.response?.result;
-      if (result?.error) throw new Error(result.error.message);
-      return { changes: Number(result?.affected_row_count ?? 0), lastInsertRowid: result?.last_insert_rowid };
+    async get(sql, params) {
+      const rows = await this.query(sql, params);
+      return rows.length ? rows[0] : null;
     },
 
-    /** 多语句：Hrana 支持一 pipeline 多条 execute（原子批处理） */
-    async exec(sql) {
-      const statements = splitStatements(sql);
-      if (!statements.length) return;
-      const data = await pipeline(
-        statements.map((s) => ({
-          type: 'execute',
-          stmt: { sql: s, args: [] },
-          want_rows: false,
-        })),
-      );
-      for (const r of data.results || []) {
-        if (r?.response?.result?.error) throw new Error(r.response.result.error.message);
+    async run(sql, params) {
+      const results = await pipeline([{ type: 'execute', stmt: { sql, args: bindArgs(params) } }]);
+      let resp = results[0] && results[0].response;
+      if (resp && resp.result) resp = resp.result; // 新版形状
+      return {
+        changes: Number((resp && (resp.rows_affected ?? resp.affected_row_count)) || 0) || 0,
+        lastInsertRowid: Number((resp && (resp.last_insert_rowid ?? 0)) || 0) || 0,
+      };
+    },
+
+    /** 建表(远程驱动初始化时执行;随后补齐工作空间迁移) */
+    async initSchema(schema) {
+      const statements = schema
+        .split(';')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      for (const sql of statements) {
+        await this.run(sql + ';');
       }
-    },
-
-    /** HTTP 无长事务：按顺序执行（弱事务语义，注释说明） */
-    async transaction(fn) {
-      return fn(adapter);
-    },
-
-    close() {
-      /* HTTP 直连无需关闭 */
+      await migrateAppSettings(this);
     },
   };
-
-  return adapter;
 }
 
-function splitStatements(sql) {
-  return String(sql)
-    .split(';')
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
+module.exports = { init };

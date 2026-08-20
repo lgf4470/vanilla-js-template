@@ -1,0 +1,20 @@
+/* 首帧基础层：完整 Nova 设计系统由 app/core/bootstrap.js 在渲染前加载。 */
+html,
+body,
+#app {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--background, Canvas);
+  color: var(--foreground, CanvasText);
+}
+
+.boot-error {
+  box-sizing: border-box;
+  min-height: 100svh;
+  padding: 2rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  white-space: pre-wrap;
+}

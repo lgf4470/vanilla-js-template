@@ -5,6 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { join, resolve } from 'node:path';
 
 const ROOT = resolve(import.meta.dirname, '..');
+const DIST = join(ROOT, 'dist');
 
 function collectJavaScriptFiles(dir, files = []) {
   for (const entry of readdirSync(dir)) {
@@ -15,25 +16,35 @@ function collectJavaScriptFiles(dir, files = []) {
   return files;
 }
 
-test('production build includes shared browser modules and valid JavaScript', () => {
+test('production build contains the migrated template structure and valid JavaScript', () => {
   const result = spawnSync(process.execPath, ['scripts/build.js'], {
     cwd: ROOT,
     encoding: 'utf8',
   });
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.equal(existsSync(join(ROOT, 'dist/shared/constants.js')), true);
-  assert.equal(existsSync(join(ROOT, 'dist/shared/validation.js')), true);
-  assert.equal(existsSync(join(ROOT, 'dist/shared/constants.test.js')), false);
-  assert.equal(existsSync(join(ROOT, 'dist/app/lib/offline-api.js')), true);
-  assert.equal(existsSync(join(ROOT, 'dist/app/file-preview.js')), true);
+  assert.equal(existsSync(join(DIST, 'app/core/bootstrap.js')), true);
+  assert.equal(existsSync(join(DIST, 'app/components/layout/shell.js')), true);
+  assert.equal(existsSync(join(DIST, 'app/components/ui/ui.js')), true);
+  assert.equal(existsSync(join(DIST, 'app/modules/dashboard/index.js')), true);
+  assert.equal(existsSync(join(DIST, 'app/modules/tasks/index.js')), true);
+  assert.equal(existsSync(join(DIST, 'app/modules/apps/index.js')), true);
+  assert.equal(existsSync(join(DIST, 'app/modules/chats/index.js')), true);
+  assert.equal(existsSync(join(DIST, 'app/modules/docs/sub/introduction.js')), true);
+  assert.equal(existsSync(join(DIST, 'app/modules/settings/index.js')), true);
+  assert.equal(existsSync(join(DIST, 'app/modules/apihub/index.js')), true);
+  assert.equal(existsSync(join(DIST, 'app/fonts')), true);
+  assert.equal(existsSync(join(DIST, 'app/template')), false);
 
-  const html = readFileSync(join(ROOT, 'dist/index.html'), 'utf8');
-  assert.match(html, /data-nova-src="\/app\/core\/bootstrap\.js\?v=[a-f0-9]{8}"/);
-  assert.match(html, /data-nova-loader/);
-  assert.match(html, /app\/file-preview\.js/);
+  const html = readFileSync(join(DIST, 'index.html'), 'utf8');
+  assert.match(html, /app\/styles\/critical\.css/);
+  assert.match(html, /app\/core\/bootstrap\.js/);
+  assert.doesNotMatch(html, /app\/lib\/chart\.umd\.js/);
+  assert.equal(existsSync(join(DIST, 'app/styles/tokens.css')), true);
+  assert.equal(existsSync(join(DIST, 'app/styles/utilities.css')), true);
+  assert.doesNotMatch(html, /app\/template|server\/template/);
 
-  for (const file of collectJavaScriptFiles(join(ROOT, 'dist'))) {
+  for (const file of collectJavaScriptFiles(DIST)) {
     const syntax = spawnSync(process.execPath, ['--check', file], {
       cwd: ROOT,
       encoding: 'utf8',

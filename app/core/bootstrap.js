@@ -1,173 +1,130 @@
-/**
- * app/core/bootstrap.js
- * 应用引导（ARCHITECTURE.md 3.2 节）：
- *  1. 加载壳层文案（common/sidebar/auth）
- *  2. 应用初始主题（<html data-theme>）
- *  3. 读取模块注册表 → 渲染侧边栏菜单树 + 登记路由表
- *  4. 鉴权守卫：未鉴权展示 auth-gate（密码页），已鉴权挂载 app-shell
- *  5. 处理同源 <a> 点击（SPA 导航）与路由变更广播
- */
+/* app/core/bootstrap.js — 当前项目的零构建模板运行时引导 */
+(function () {
+  'use strict';
 
-import { router } from './router.js';
-import { i18n, t } from './i18n.js';
-import { theme } from './theme.js';
-import { auth } from './auth.js';
-import { isFileRuntime } from './runtime.js';
-import { loadModuleConfigs } from '../modules/registry.js';
+  /* 登录首屏只加载鉴权所需能力；完整 Shell 与业务公共组件在鉴权后加载。 */
+  var AUTH_CORE = [
+    'app/core/logger.js',
+    'app/core/i18n.js',
+    'app/components/ui/icons-data.js',
+    'app/components/ui/icons.js',
+    'app/core/api.js',
+    'app/core/auth.js',
+    'app/core/settings.js',
+    'app/components/ui/ui.js',
+  ];
 
-// 副作用导入：注册全部公共组件与壳层组件
-import '../components/ui/index.js';
-import '../components/layout/index.js';
+  var APP_CORE = [
+    'app/components/ui/tooltip.js',
+    'app/components/ui/search-input.js',
+    'app/components/ui/json-tree.js',
+    'app/components/ui/color-picker.js',
+    'app/components/ui/group-tree.js',
+    'app/components/ui/tag-picker.js',
+    'app/components/ui/avatar.js',
+    'app/components/layout/shell.js',
+    'app/core/app.js',
+    'app/components/ui/workspace.js',
+    'app/components/ui/profile.js',
+    'app/core/interactions.js',
+  ];
 
-const root = document.getElementById('app-root');
+  var APP_STYLES = [
+    'app/styles/tokens.css',
+    'app/styles/semantic-tokens.css',
+    'app/styles/utilities.css',
+  ];
+  var appRuntimePromise = null;
 
-let shell = null;
-let manifests = [];
-let menu = [];
-let routesRegistered = false;
+  function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      var script = document.createElement('script');
+      script.src = src;
+      script.onload = resolve;
+      script.onerror = function () {
+        reject(new Error('脚本加载失败: ' + src));
+      };
+      document.head.appendChild(script);
+    });
+  }
 
-/**
- * 壳层菜单文案必须来自已在 bootstrap 阶段加载的 sidebar 命名空间。
- * i18n.t() 缺 key 时会返回 key 本身，因此不能使用 `t(key) || fallback`。
- */
-function menuText(key, fallback) {
-  const value = t(key);
-  return value === key ? fallback : value;
-}
+  function loadScripts(list) {
+    return list.reduce(function (promise, src) {
+      return promise.then(function () {
+        return loadScript(src);
+      });
+    }, Promise.resolve());
+  }
 
-/** 由注册表派生侧边栏数据结构 */
-function buildMenu(list) {
-  return list
-    .slice()
-    .sort((a, b) => a.order - b.order)
-    .map((m) => ({
-      id: m.id,
-      icon: m.icon,
-      href: `/${m.id}`,
-      label: menuText(`sidebar.${m.id}`, m.id),
-      submodules: (m.submodules || [])
-        .slice()
-        .sort((a, b) => a.order - b.order)
-        .map((s) => ({
-          id: s.id,
-          icon: s.icon,
-          href: `/${m.id}/${s.id}`,
-          label: menuText(`sidebar.submodules.${m.id}.${s.id}`, s.id),
-        })),
-    }));
-}
+  function loadStyles(list) {
+    return list.reduce(function (promise, href) {
+      return promise.then(function () {
+        return new Promise(function (resolve, reject) {
+          var link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = href;
+          link.onload = resolve;
+          link.onerror = function () {
+            reject(new Error('样式加载失败: ' + href));
+          };
+          document.head.appendChild(link);
+        });
+      });
+    }, Promise.resolve());
+  }
 
-/** 为模块/子模块建立路由条目（懒加载 JS + 语言包，再挂载视图） */
-function makeEntry(manifest, sub, path) {
-  return {
-    path,
-    async mount(viewport) {
-      const mod = sub ? await sub.loadView() : await manifest.loadRoot();
-      if (mod && typeof mod.loadLocale === 'function') {
-        i18n.merge(await mod.loadLocale(i18n.lang));
-      }
+  function loadRegistry() {
+    var url = new URL('app/modules/registry.js', document.baseURI).href;
+    return import(url).then(function (registry) {
+      return registry.loadModuleConfigs();
+    });
+  }
 
-      const moduleLabel = menuText(`sidebar.${manifest.id}`, manifest.id);
-      const subLabel = sub ? menuText(`sidebar.submodules.${manifest.id}.${sub.id}`, sub.id) : '';
-      const crumbs = sub
-        ? [
-            { label: moduleLabel, href: `/${manifest.id}` },
-            { label: subLabel },
-          ]
-        : [{ label: moduleLabel }];
-      shell?.setBreadcrumb(crumbs);
-
-      viewport.replaceChildren();
-      await mod.mount(viewport, { path, manifest, sub, params: {} });
-      viewport.classList.add('nova-fade-in');
-    },
-  };
-}
-
-function registerRoutes() {
-  if (routesRegistered) return;
-  for (const m of manifests) {
-    const rootPath = `/${m.id}`;
-    router.add(rootPath, makeEntry(m, null, rootPath));
-    for (const s of m.submodules || []) {
-      const subPath = `${rootPath}/${s.id}`;
-      router.add(subPath, makeEntry(m, s, subPath));
+  function showBootError(error) {
+    if (window.App && App.logger) App.logger.error('boot', '应用启动失败', error);
+    else console.error('[boot] 启动失败', error);
+    var root = document.getElementById('app');
+    if (root) {
+      root.innerHTML =
+        '<div class="boot-error">Boot failed: ' +
+        String(error && error.message ? error.message : error) +
+        '</div>';
     }
   }
-  router.onUnmatched = (path) => {
-    // 未匹配（含 /）→ 落到第一个模块
-    const fallback = menu.length ? menu[0].href : '/';
-    if (path !== fallback) router.navigate(fallback, { replace: true });
-  };
-  routesRegistered = true;
-}
 
-/** 挂载应用壳层（鉴权通过后） */
-function mountApp() {
-  const el = document.createElement('app-shell');
-  shell = el;
-  root.replaceChildren(el);
-  router.viewport = el.viewport;
-  el.setMenu(menu);
-  router.render();
-}
-
-/** 展示统一密码页；expired=true 时文案提示会话过期 */
-function showGate(expired = false) {
-  root.replaceChildren();
-  const gate = document.createElement('app-auth-gate');
-  gate.setAttribute('expired', expired ? 'true' : 'false');
-  root.appendChild(gate);
-  gate.addEventListener('auth:success', () => mountApp());
-}
-
-// ---------- 全局事件 ----------
-
-// 同源 <a> 点击 → SPA 导航（Shadow DOM 内的事件也会冒泡重定向到 document）
-document.addEventListener('click', (e) => {
-  const a = e.target?.closest?.('a[href]');
-  if (!a || e.defaultPrevented || e.button !== 0 || a.target === '_blank') return;
-  const href = a.getAttribute('href');
-  if (!href || !href.startsWith('/') || href.startsWith('//')) return;
-  if (isFileRuntime) {
-    e.preventDefault();
-    router.navigate(href);
-    return;
+  function loadApplicationRuntime() {
+    if (!appRuntimePromise) {
+      appRuntimePromise = loadScripts(APP_CORE)
+        .then(loadRegistry)
+        .then(function () {
+          if (!window.App || typeof App.start !== 'function') {
+            throw new Error('应用 Shell 未完成初始化');
+          }
+          if (App.logger) App.logger.info('boot', '核心运行时 + 模块注册表加载完成');
+          return App.start();
+        });
+    }
+    return appRuntimePromise;
   }
-  const url = new URL(href, window.location.origin);
-  if (url.origin !== window.location.origin) return;
-  e.preventDefault();
-  router.navigate(url.pathname + url.search);
-});
 
-// 路由变化 → 侧边栏高亮
-window.addEventListener('route:change', (e) => {
-  shell?.setActive(e.detail.path);
-});
+  function start() {
+    if (!App.auth || !App.settings) return;
+    if (!App.auth.isAuthed()) {
+      App.auth.renderLogin();
+      return Promise.resolve();
+    }
+    return loadApplicationRuntime();
+  }
 
-// 会话失效（fetcher 401 广播）→ 切回密码页
-window.addEventListener('auth:expired', () => showGate(true));
-
-// 语言切换 → 重建菜单文案并重渲染当前路由
-i18n.onChange(() => {
-  if (!shell) return;
-  menu = buildMenu(manifests);
-  shell.setMenu(menu);
-  router.render();
-});
-
-// ---------- 启动 ----------
-
-async function bootstrap() {
-  await i18n.loadShell();
-  theme.apply();
-
-  manifests = await loadModuleConfigs();
-  menu = buildMenu(manifests);
-  registerRoutes();
-
-  if (auth.isAuthenticated()) mountApp();
-  else showGate(false);
-}
-
-bootstrap();
+  loadStyles(APP_STYLES)
+    .then(function () {
+      return loadScripts(AUTH_CORE);
+    })
+    .then(function () {
+      window.App = window.App || {};
+      /* auth.js 的登录成功回调通过这个门进入完整应用运行时。 */
+      App.start = start;
+      return start();
+    })
+    .catch(showBootError);
+})();

@@ -1,149 +1,124 @@
-# Project Name
+# One API
 
-> 纯 JavaScript、零第三方依赖的模块化应用架构。侧边栏 + 顶栏布局，Web Components 组件库，同构后端一份代码部署 Cloudflare / Vercel / Deno / Docker，本地 SQLite / Cloudflare D1 / Turso 自动切换。
+> 纯 JavaScript、零第三方依赖的模块化管理后台。此项目已将 `.wrangler/html-template` 的 Dashboard、Tasks、Apps、Chats、Docs、API Hub、Settings、工作空间、配置文件、主题与鉴权能力完整适配到当前仓库的 `app/`、`server/`、`shared/` 目录约定。
 
-深入架构设计请看 [`ARCHITECTURE.md`](./ARCHITECTURE.md)；AI/开发者协作规则请看 [`AGENTS.md`](./AGENTS.md)。
+架构真源见 [`ARCHITECTURE.md`](./ARCHITECTURE.md)，协作规则见 [`AGENTS.md`](./AGENTS.md)。
 
----
+## 核心特性
 
-## ✨ 核心特性
+- **零第三方依赖**：`package.json` 的 `dependencies` 与 `devDependencies` 始终为空。
+- **完整模板 Shell**：响应式侧边栏、顶栏、移动端抽屉、拖拽调宽、工作空间切换、用户配置文件与主题设置面板。
+- **完整业务页面**：Dashboard、Tasks 数据表格、Apps 集成网格、Chats 会话、Docs 四个子页面、API Hub 三栏请求工作区、Settings 五个子页面。
+- **三语言**：简体中文、繁体中文、English；模块语言包随模块懒加载。
+- **主题系统**：系统 / 浅色 / 深色、8 套风格、色板、字体、圆角、菜单与侧边栏设置，保留模板的 Nova 设计系统和本地样式资源。
+- **工作空间与配置文件**：工作空间数据按 `workspace_id` 隔离，配置文件可保存外观、通知和显示设置。
+- **服务端鉴权与持久化**：单密码登录、会话令牌哈希存储、SQLite/Turso/D1 适配器、API Hub 配置与历史记录。
+- **四平台入口**：Node 本地服务、Cloudflare、Vercel、Deno 适配器，业务 API 统一从 `server/app.js` 汇总。
 
-- **零第三方运行时依赖**：`dependencies` / `devDependencies` 永远为空，全部基于浏览器与 JS 运行时标准 API 手写实现。
-- **模块化 + 强解耦**：侧边栏一级菜单 = 一个模块，二级菜单 = 子模块，模块间禁止相互引用，新增模块不改动壳层代码。
-- **统一 UI 语言**：自研 "Nova" 设计系统（shadcn 视觉语言 + zinc 色板，纯手写实现），全站禁用浏览器默认弹窗/控件视觉。
-- **三态暗黑模式**：系统 / 浅色 / 深色，三段式胶囊切换。
-- **响应式 + 高信息密度**：移动端抽屉式侧边栏，卡片类组件严格遵循"反留白"规则。
-- **数据库自动选型**：开发环境本地 SQLite；部署到 Cloudflare 自动用 D1（可切 Turso）；部署到其它平台自动用 Turso。
-- **四平台同构部署**：Cloudflare / Vercel / Deno / Docker，后端核心代码 100% 复用。
-- **多语言**：简体中文 / 繁体中文 / English，按模块懒加载语言包。
-- **安全默认项**：单密码全局鉴权（`X-Auth-Password`，无状态派生令牌）+ 敏感字段 AES-GCM 加密。
-- **体积/性能预算化**：首屏 JS ≤ 40KB(gzip)，单模块增量 chunk ≤ 15KB(gzip)，CI 强制校验。
+## 技术栈
 
----
-
-## 🧱 技术栈
-
-| 层 | 方案 |
+| 层 | 实现 |
 |---|---|
-| 前端组件 | 原生 Web Components（Custom Elements + Shadow DOM） |
-| 前端构建 | Zero-Build：原生 ESM + Import Map + 模块懒加载 |
-| 后端 | 统一 `Request → Response` 标准函数，四平台薄适配层 |
-| 数据库 | `node:sqlite` / Cloudflare D1 / Turso（HTTP 协议直连） |
-| 加密/鉴权 | Web Crypto（AES-GCM / PBKDF2 / HMAC） |
-| 测试 | `node:test` |
-| Lint | 手写规则脚本 |
+| 前端 | 原生 JavaScript、Hash 路由、动态模块加载、模板 CSS |
+| UI | `app/components/ui/` 公共渲染函数与 SVG 图标集 |
+| 后端 | Node 原生 HTTP + 标准 `Request` / `Response` 语义 |
+| 数据库 | Node `node:sqlite`、Cloudflare D1、Turso HTTP |
+| 校验 | `node --check`、自定义 lint、`node:test` |
+| 构建 | Zero-Build 复制、静态资源指纹与零依赖词法压缩 |
 
-> 详细选型理由与架构决策记录见 `ARCHITECTURE.md`。
+## 快速开始
 
----
-
-## 🚀 快速开始
-
-**环境要求**：Node ≥ 22（用于内置 `node:sqlite`）。
+环境要求：Node.js ≥ 22。
 
 ```bash
-git clone <repo-url>
-cd <repo>
-cp .env.example .env      # 按需填写，见下方环境变量说明
-just dev                  # 本地开发服务器（Node 适配器 + 本地 SQLite）
+# 安装步骤为空：仓库没有第三方依赖
+npm run dev
 ```
 
-首次启动会自动执行数据库迁移并写入初始 `app_settings`。打开浏览器访问本地地址后，会先看到统一的密码设置/输入页（鉴权系统，见下文）。
+服务默认监听 `0.0.0.0:${PORT:-3000}`。服务器模式必须配置 `AUTH_PASSWORD` 才能登录：
 
-### 直接双击 `index.html`
-
-也可以直接双击仓库根目录的 `index.html`：
-
-- 页面会自动切换到 `file://` 本地预览模式，并使用 hash 路由，避免修改本地文件路径；
-- 本地模式只绕过服务端鉴权，不要求输入密码，也不会创建或发送鉴权令牌；
-- 仪表盘、笔记/标签 CRUD、对话消息、个人资料、主题/语言、安全选项和数据库状态等功能均可操作；
-- 本地文件没有后端数据库，数据默认保存到当前浏览器的 IndexedDB；如果浏览器禁用 IndexedDB 才降级为当前页面内存。需要 SQLite 持久化、多设备数据和真实服务端鉴权时，使用 `just dev`。
-
----
-
-## 📁 目录速览
-
-```
-app/       前端 SPA（core / components / styles / lib / modules）
-server/    同构后端（core / db / modules / adapters）
-shared/    前后端共享常量与校验规则
-scripts/   开发 / 构建 / 校验脚本
-docs/      架构决策记录（ADR）
+```bash
+AUTH_PASSWORD=admin123 npm run dev
 ```
 
-完整目录结构与每层职责说明见 [`ARCHITECTURE.md`](./ARCHITECTURE.md#2-目录结构总览)。
+也可以把配置写入本地 `.env`；`.env` 不应提交到仓库。生产环境请通过部署平台的环境变量界面配置密钥，不要写入源码。
 
----
+## 目录结构
 
-## 🛠 常用命令（justfile）
+```text
+app/
+  core/                  引导、鉴权、设置、i18n、路由内核与交互
+  components/
+    layout/              Shell 布局渲染
+    ui/                  公共 UI、图标、头像、工作空间与辅助组件
+  modules/               dashboard/tasks/apps/chats/docs/apihub/settings
+  styles/                模板设计系统、token、关键样式与工具类
+  fonts/                 模板本地字体资源目录
+  lib/                   单文件前端库
+server/
+  app.js                 API 运行时汇总入口
+  core/                  API、鉴权、安全、HTTP 与日志
+  db/                    schema、作用域与 SQLite/Turso/D1 适配器
+  modules/               auth、settings、apihub 路由与服务
+  adapters/              Node、Vercel、Cloudflare、Deno 入口
+shared/                   前后端共享常量和校验
+scripts/                  开发、构建、lint、测试与预算检查
+public/                   公开静态资源
+```
+
+仓库中不保留迁移包装目录：模板前端不放在 `app/template/`，模板后端不放在 `server/template/`。
+
+## 常用命令
 
 | 命令 | 作用 |
 |---|---|
-| `just dev` | 启动本地开发服务器 |
-| `just db:migrate` | 执行数据库迁移 |
-| `just db:seed` | 写入演示数据 |
-| `just lint` | 代码规范检查（含禁用模式扫描） |
-| `just test` | 运行测试 |
-| `just i18n:check` | 校验三语言文案完整性 |
-| `just build` | 生产构建（指纹化 + 压缩，无打包器） |
-| `just build:budget` | 体积预算校验 |
-| `just deploy:cloudflare` / `deploy:vercel` / `deploy:deno` / `deploy:docker` | 部署到对应平台 |
+| `npm run dev` | 启动 Node + SQLite 本地服务 |
+| `npm test` | 运行全部 Node 测试 |
+| `npm run lint` | 语法、禁用模式、颜色与 Tab 检查 |
+| `npm run i18n:check` | 校验模块三语言 key 集合一致 |
+| `npm run deps:check` | 校验无第三方依赖 |
+| `npm run build` | 生成 `dist/` 静态产物 |
+| `npm run build:budget` | 校验首屏和模块懒加载文件 gzip 预算 |
+| `npm run db:migrate` | 执行数据库迁移 |
+| `npm run db:reset` | 重建本地数据库 |
+| `npm run db:seed` | 写入演示数据 |
 
----
+## 环境变量
 
-## ⚙️ 环境变量
+| 变量 | 说明 |
+|---|---|
+| `PORT` | Node 服务端口，默认 `3000` |
+| `AUTH_PASSWORD` | 登录密码；服务器模式必填，不落库 |
+| `ENCRYPTION_KEY` | AES-256-GCM 主密钥，64 位 hex；生产环境必填 |
+| `DB_DRIVER` | `sqlite`、`turso` 或 `d1`，未设置时按运行环境选择 |
+| `SQLITE_PATH` | SQLite 文件路径，默认 `sqlite.db` |
+| `DATABASE_URL` | Turso/libSQL HTTP 数据库地址 |
+| `DATABASE_AUTH_TOKEN` | Turso/libSQL Bearer Token |
+| `D1_ACCOUNT_ID` / `D1_DATABASE_ID` / `D1_API_TOKEN` | 本地调用 D1 REST API 时使用 |
 
-| 变量 | 说明 | 必填 |
-|---|---|---|
-| `AUTH_PASSWORD_HASH` | 管理密码哈希，覆盖数据库中的 `settings:auth:password_hash` | 生产环境建议设置 |
-| `ENCRYPTION_KEY` | 敏感字段信封加密主密钥 | 是 |
-| `DB_DRIVER` | 显式指定 `sqlite`/`d1`/`turso`，不设置则按平台自动选型 | 否 |
-| `TURSO_DATABASE_URL` / `TURSO_AUTH_TOKEN` | Turso 连接信息（Vercel/Deno/Docker 默认数据库） | 使用 Turso 时必填 |
-| `D1_BINDING` | Cloudflare D1 绑定名（wrangler.toml 中声明） | Cloudflare 部署时必填 |
+敏感值由部署平台的环境变量管理。应用设置中的邮箱、API Key、Token 和凭证字段通过 `server/core/security/` 加密后才会写入数据库；会话令牌只保存 SHA-256 哈希。
 
-数据库自动选型逻辑详见 [`ARCHITECTURE.md` 4.4 节](./ARCHITECTURE.md#44-数据库分层适配器模式--自动选型)。
+## API 约定
 
----
+除登录接口外，API 默认需要 `x-auth-token`：
 
-## ☁️ 部署
+- `POST /api/auth/login`：登录并签发会话令牌
+- `GET /api/auth/verify`：校验当前会话
+- `POST /api/auth/logout`：注销当前会话
+- `GET|PUT|DELETE /api/settings`：按工作空间读写设置
+- `GET /api/hub/state`：读取 API Hub 路由、配置与历史
+- `PUT /api/hub/config`：保存 API Hub 配置
+- `PUT /api/hub/history`：保存请求运行历史
 
-| 平台 | 命令 | 默认数据库 |
-|---|---|---|
-| Cloudflare Pages/Workers | `just deploy:cloudflare` | D1 |
-| Vercel | `just deploy:vercel` | Turso |
-| Deno Deploy | `just deploy:deno` | Turso |
-| Docker/VPS | `just deploy:docker` | Turso（可切本地 SQLite） |
+## 部署
 
-CI/CD 流水线（GitHub Actions）说明见 [`ARCHITECTURE.md` 第 6 节](./ARCHITECTURE.md#6-构建--自动化)。
+- Cloudflare：`npm run build` 后使用 `wrangler.toml` 与 `server/adapters/cloudflare.entry.js`
+- Vercel：使用 `vercel.json`、`api/server.js` 与 `server/adapters/vercel.entry.js`
+- Deno：使用 `server/adapters/deno.entry.mjs`
+- Docker：使用 `Dockerfile` 启动 Node 适配器
 
----
+部署前请配置 `AUTH_PASSWORD`、`ENCRYPTION_KEY` 以及对应数据库驱动所需的连接变量。可先运行 `freebuff-deploy check` 检查托管平台实际执行的安装与构建命令。
 
-## 🌐 多语言
+## 语言与模块约定
 
-当前支持：简体中文（`zh-CN`）、繁体中文（`zh-TW`）、English（`en`）。每个模块自带语言包，随模块懒加载，新增文案流程见 [`AGENTS.md` 第 7 节](./AGENTS.md#7-i18n-新增文案流程)。
-
----
-
-## 🔐 安全性
-
-- 全局单密码鉴权（`X-Auth-Password`），会话时长可选 4/8/12/24 小时、7/14/30/90 天，或"直到下次浏览器打开"；
-- 密码仅存哈希，不存明文；
-- 用户信息、大模型 API Key、第三方 Token 等敏感字段均使用 AES-GCM 加密落库，不做明文存取；
-
-详见 [`ARCHITECTURE.md` 4.3、4.6 节](./ARCHITECTURE.md#43-鉴权系统x-auth-password)。
-
----
-
-## 🤝 贡献指南
-
-提交前请阅读 [`AGENTS.md`](./AGENTS.md)，遵循：
-
-- 新增模块/子模块的标准流程（不修改壳层代码）；
-- Conventional Commits 规范，**正文必须逐文件说明改动到方法/组件级别**；
-- 提交前自检清单（lint / test / i18n:check / build:budget 全部通过）。
-
----
-
-## 📄 License
-
-TBD
+业务模块放在 `app/modules/<id>/`，模块清单由 `app/modules/registry.js` 登记，根视图、样式和语言包按需加载。新增或调整文案后运行 `npm run i18n:check`；新增数据库查询必须参数化并遵循 `server/db/query/` 约定。

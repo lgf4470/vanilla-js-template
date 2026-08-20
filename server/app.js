@@ -1,69 +1,95 @@
-/**
- * server/app.js
- * 同构后端组装（运行时无关，ARCHITECTURE.md 4.1 节：纯 Request → Response）：
- *   1. resolveDb 自动选型（sqlite / d1 / turso）
- *   2. ensureMigrated 幂等迁移
- *   3. 加载 app_settings 内存快照（缓存第 3 层）
- *   4. 汇总各模块路由（只加文件、不改壳层：新增模块在此补一行 registerXxxRoutes）
- *   5. 包装中间件管道（CORS → 限流 → 鉴权 → 路由 → 错误处理）
- */
+'use strict';
 
-import { createRouter } from './core/router.js';
-import { createHandler } from './core/middleware.js';
-import { resolveDb } from './db/resolver.js';
-import { ensureMigrated } from './db/migrate.js';
-import { createSettingsSnapshot } from './core/context.js';
-import { registerAuthRoutes } from './modules/auth/routes.js';
-import { registerSettingsRoutes } from './modules/settings/routes.js';
-import { registerNotesRoutes } from './modules/notes/routes.js';
-import { registerChatRoutes } from './modules/chat/routes.js';
-import { registerChatsRoutes } from './modules/chats/routes.js';
+const { getDb, SCHEMA } = require('./db');
+const { encrypt, decrypt } = require('./core/security');
+const { verifyPassword } = require('./core/auth');
+const { createApiHandler } = require('./core/api');
 
-/**
- * 创建完整应用（幂等：同一 env 对象在进程内只初始化一次，见 handleRequest 的缓存）。
- * @param {Record<string, any>} env 平台注入环境（含 DB 绑定 / 环境变量）
- */
-export async function createApp(env = {}) {
-  const { driver, db } = resolveDb(env);
-  await ensureMigrated(db);
-  const settings = await createSettingsSnapshot(db);
+let runtimePromise = null;
 
-  const app = { env, db, driver, settings };
+function makeNodeRequest(request) {
+  const headers = Object.fromEntries(request.headers.entries());
+  const listeners = { data: [], end: [], error: [] };
+  const nodeRequest = {
+    method: request.method,
+    headers,
+    url: request.url,
+    socket: { remoteAddress: headers['x-forwarded-for'] || 'request' },
+    on(event, callback) {
+      if (listeners[event]) listeners[event].push(callback);
+      return nodeRequest;
+    },
+  };
 
-  const router = createRouter();
-  registerAuthRoutes(router, app);
-  registerSettingsRoutes(router, app);
-  registerNotesRoutes(router, app);
-  registerChatRoutes(router, app);
-  registerChatsRoutes(router, app);
+  // Delay body consumption until the route handler has attached its data/end
+  // listeners; otherwise a fast Request can resolve before readBody subscribes.
+  setImmediate(() => {
+    Promise.resolve(request.text())
+      .then((body) => {
+        if (body) listeners.data.forEach((callback) => callback(body));
+        listeners.end.forEach((callback) => callback());
+      })
+      .catch((error) => listeners.error.forEach((callback) => callback(error)));
+  });
 
-  const handleRequest = createHandler({ router, app });
-  return { ...app, router, handleRequest };
+  return nodeRequest;
 }
 
-const _apps = new WeakMap();
+function makeNodeResponse() {
+  let status = 200;
+  let headers = {};
+  let body = '';
+  return {
+    writeHead(nextStatus, nextHeaders) {
+      status = nextStatus;
+      headers = { ...headers, ...(nextHeaders || {}) };
+      this.statusCode = nextStatus;
+      this.headersSent = true;
+    },
+    end(nextBody) {
+      body = nextBody == null ? '' : nextBody;
+    },
+    statusCode: status,
+    headersSent: false,
+    toResponse() {
+      return new Response(body, { status, headers });
+    },
+  };
+}
 
-/**
- * 同一 env 对象 → 进程内唯一的 app 实例（DB 连接 / 迁移 / 设置快照只初始化一次）。
- * 注意：直接调 createApp() 会绕过缓存（每次新建，供脚本/测试隔离使用）。
- */
-export function getOrCreateApp(env = {}) {
-  let appPromise = _apps.get(env);
-  if (!appPromise) {
-    appPromise = createApp(env).catch((err) => {
-      _apps.delete(env);
-      throw err;
+async function getRuntime(env = process.env) {
+  if (!runtimePromise) {
+    runtimePromise = (async () => {
+      const db = getDb(env);
+      if (typeof db.initSchema === 'function') await db.initSchema(SCHEMA);
+      const handler = createApiHandler({
+        db,
+        encrypt: (value) => encrypt(value, env),
+        decrypt: (value) => decrypt(value, env),
+        verifyPassword: (password) => verifyPassword(password, env),
+      });
+      return { db, handler };
+    })().catch((error) => {
+      runtimePromise = null;
+      throw error;
     });
-    _apps.set(env, appPromise);
   }
-  return appPromise;
+  return runtimePromise;
 }
 
-/**
- * 平台统一入口：Request → Response。
- * 各适配器（server/adapters/*.entry.js）只做"胶水转换"，业务 100% 复用本函数。
- */
-export async function handleRequest(request, env = {}) {
-  const app = await getOrCreateApp(env);
-  return app.handleRequest(request);
+/** 统一平台入口：API Request → Response；静态资源由平台适配器处理。 */
+async function handleRequest(request, env = process.env) {
+  const { handler } = await getRuntime(env);
+  const url = new URL(request.url);
+  const nodeRequest = makeNodeRequest(request);
+  const nodeResponse = makeNodeResponse();
+  await handler(nodeRequest, nodeResponse, url.pathname);
+  return nodeResponse.toResponse();
 }
+
+async function createApp(env = process.env) {
+  const runtime = await getRuntime(env);
+  return { ...runtime, env, handleRequest: (request) => handleRequest(request, env) };
+}
+
+module.exports = { createApp, getOrCreateApp: createApp, handleRequest };

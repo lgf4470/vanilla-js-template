@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Zero-dependency, modular isomorphic web app. Web Components + Nova design tokens, Request->Response backend deployable to Cloudflare / Vercel / Deno / Docker.",
+  "description": "One API — zero-dependency HTML/JS/CSS administration template with workspace-aware API Hub.",
   "engines": {
     "node": ">=22"
   },

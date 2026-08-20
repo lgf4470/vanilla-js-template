@@ -1,58 +1,70 @@
 <!doctype html>
-<html lang="zh-CN">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Nova — 零第三方依赖、模块化、同构部署的应用控制台" />
-  <title>Nova 控制台</title>
-  <link rel="icon" type="image/svg+xml" data-nova-href="/public/favicon.svg" />
-  <!-- Zero-Build：原生 ESM + Import Map，不打包；模块按路由懒加载 -->
-  <script type="importmap">
-    {
-      "imports": {}
-    }
-  </script>
-  <link rel="stylesheet" data-nova-href="/app/styles/tokens.css" />
-  <link rel="stylesheet" data-nova-href="/app/styles/reset.css" />
-  <link rel="stylesheet" data-nova-href="/app/styles/utilities.css" />
-  <link rel="stylesheet" data-nova-href="/app/styles/animations.css" />
-  <script>
-    (() => {
-      const root = location.protocol === 'file:'
-        ? new URL('.', location.href)
-        : new URL('/', location.href);
-      window.NOVA_ASSET_ROOT = root;
-      for (const element of document.querySelectorAll('[data-nova-href]')) {
-        const path = element.dataset.novaHref.replace(/^\/+/, '');
-        element.href = new URL(path, root).href;
-      }
-    })();
-  </script>
-</head>
-<body>
-  <!-- 壳层由 bootstrap 挂载：app-shell（sidebar + header + main）或 auth-gate -->
-  <div id="app-root" aria-live="polite"></div>
-  <noscript>
-    <div style="padding: 2rem; text-align: center; font-family: system-ui, sans-serif">
-      此应用需要启用 JavaScript 才能运行。
-    </div>
-  </noscript>
-  <script type="module" data-nova-src="/app/core/bootstrap.js"></script>
-  <script data-nova-loader>
-    (() => {
-      const placeholder = document.querySelector('script[data-nova-src]');
-      if (location.protocol === 'file:') {
-        const preview = document.createElement('script');
-        preview.src = new URL('app/file-preview.js', window.NOVA_ASSET_ROOT).href;
-        placeholder.remove();
-        document.head.appendChild(preview);
-        return;
-      }
-      const module = document.createElement('script');
-      module.type = 'module';
-      module.src = new URL(placeholder.dataset.novaSrc.replace(/^\/+/, ''), window.NOVA_ASSET_ROOT).href;
-      placeholder.replaceWith(module);
-    })();
-  </script>
-</body>
+<html
+  lang="zh-CN"
+  class="style-nova base-zinc chart-zinc menu-color-default menu-appearance-solid"
+  data-sidebar-variant="inset"
+  data-sidebar-collapsible="icon"
+>
+  <head>
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; object-src 'none'; base-uri 'self'"
+    />
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="public/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>One API</title>
+    <link rel="stylesheet" href="app/styles/critical.css" />
+    <script>
+      /* PREPAINT — 首帧脚本：在应用启动前应用主题、语言与外观，避免闪烁。 */
+      (function () {
+        try {
+          function get(key) {
+            try {
+              return localStorage.getItem(key);
+            } catch (e) {
+              return null;
+            }
+          }
+          var root = document.documentElement;
+          var loc = get('html-template-locale');
+          root.lang = loc === 'zh-CN' || loc === 'zh-TW' || loc === 'en' ? loc : 'zh-CN';
+          var stored = get('html-template-theme');
+          var dark =
+            stored === 'dark' ||
+            (stored !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+          root.classList.toggle('dark', dark);
+          root.style.colorScheme = dark ? 'dark' : 'light';
+          var ap = {
+            style: 'nova',
+            base: 'zinc',
+            chart: 'zinc',
+            'menu-color': 'default',
+            'menu-appearance': 'solid',
+          };
+          Object.keys(ap).forEach(function (k) {
+            var v = get('html-template-' + k);
+            root.classList.add(k + '-' + (v || ap[k]));
+          });
+          var radius = get('html-template-radius');
+          if (radius) root.style.setProperty('--radius', radius);
+          var font = get('html-template-font');
+          if (font) root.style.setProperty('--font-sans-base', font);
+          var headingFont = get('html-template-heading-font');
+          if (headingFont) root.style.setProperty('--font-heading-base', headingFont);
+          root.setAttribute('data-sidebar-variant', get('html-template-sidebar-variant') || 'inset');
+          root.setAttribute('data-sidebar-collapsible', get('html-template-sidebar-collapsible') || 'icon');
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <noscript>
+      <div style="padding: 40px; font-family: monospace">
+        This template requires JavaScript to render the app shell.
+      </div>
+    </noscript>
+    <script src="app/core/bootstrap.js"></script>
+  </body>
 </html>

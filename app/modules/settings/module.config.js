@@ -1,21 +1,55 @@
-/**
- * settings 模块清单：资料、账户、外观、通知、显示、大模型、安全与数据库子模块。
- * 对应 ARCHITECTURE.md 4.3、4.5、4.6 节的安全与会话配置能力。
- */
-export default {
+const children = [
+  {
+    id: 'profile',
+    icon: 'user-cog',
+    order: 1,
+    title: { 'zh-CN': '个人资料', 'zh-TW': '個人資料', en: 'Profile' },
+    route: '/settings',
+  },
+  {
+    id: 'account',
+    icon: 'wrench',
+    order: 2,
+    title: { 'zh-CN': '账户', 'zh-TW': '帳戶', en: 'Account' },
+    route: '/settings/account',
+  },
+  {
+    id: 'appearance',
+    icon: 'palette',
+    order: 3,
+    title: { 'zh-CN': '外观', 'zh-TW': '外觀', en: 'Appearance' },
+    route: '/settings/appearance',
+  },
+  {
+    id: 'notifications',
+    icon: 'bell',
+    order: 4,
+    title: { 'zh-CN': '通知', 'zh-TW': '通知', en: 'Notifications' },
+    route: '/settings/notifications',
+  },
+  {
+    id: 'display',
+    icon: 'monitor',
+    order: 5,
+    title: { 'zh-CN': '显示', 'zh-TW': '顯示', en: 'Display' },
+    route: '/settings/display',
+  },
+];
+
+const manifest = {
   id: 'settings',
   icon: 'settings',
-  order: 4,
+  order: 7,
   i18nNamespace: 'settings',
   loadRoot: () => import('./index.js'),
-  submodules: [
-    { id: 'profile', icon: 'user', order: 1, loadView: () => import('./submodules/profile/index.js') },
-    { id: 'account', icon: 'user', order: 2, loadView: () => import('./submodules/preferences/index.js') },
-    { id: 'appearance', icon: 'monitor', order: 3, loadView: () => import('./submodules/preferences/index.js') },
-    { id: 'notifications', icon: 'bell', order: 4, loadView: () => import('./submodules/preferences/index.js') },
-    { id: 'display', icon: 'dashboard', order: 5, loadView: () => import('./submodules/preferences/index.js') },
-    { id: 'llm', icon: 'sparkles', order: 6, loadView: () => import('./submodules/preferences/index.js') },
-    { id: 'security', icon: 'shield-check', order: 7, loadView: () => import('./submodules/security/index.js') },
-    { id: 'database', icon: 'database', order: 8, loadView: () => import('./submodules/database/index.js') },
-  ],
+  submodules: children,
+  title: { 'zh-CN': '设置', 'zh-TW': '設定', en: 'Settings' },
+  route: '/settings',
+  load: 'index.js',
+  css: 'module.css',
+  i18nFile: 'i18n.js',
+  children,
 };
+
+window.App?.registerModule(manifest);
+export default manifest;

@@ -1,0 +1,34 @@
+/* Nova semantic color tokens for migrated template UI. */
+:root {
+  --nova-white: #fff;
+  --nova-black: #000;
+  --nova-ink: #18181b;
+  --nova-muted: #71717a;
+  --nova-border: #e4e4e7;
+  --nova-accent: #f4f4f5;
+  --nova-primary-blue: #2563eb;
+  --nova-success: #16a34a;
+  --nova-warning: #d97706;
+  --nova-purple: #9333ea;
+  --nova-cyan: #0891b2;
+  --nova-danger: #ef4444;
+  --nova-palette-accent: #0f172a;
+  --nova-palette-zinc: #71717a;
+  --nova-palette-amber: #f59e0b;
+  --nova-palette-blue: #3b82f6;
+  --nova-palette-cyan: #06b6d4;
+  --nova-palette-emerald: #10b981;
+  --nova-palette-fuchsia: #d946ef;
+  --nova-palette-green: #22c55e;
+  --nova-palette-indigo: #6366f1;
+  --nova-palette-lime: #84cc16;
+  --nova-palette-orange: #f97316;
+  --nova-palette-pink: #ec4899;
+  --nova-palette-purple: #a855f7;
+  --nova-palette-red: #ef4444;
+  --nova-palette-rose: #f43f5e;
+  --nova-palette-sky: #0ea5e9;
+  --nova-palette-teal: #14b8a6;
+  --nova-palette-violet: #8b5cf6;
+  --nova-palette-yellow: #eab308;
+}

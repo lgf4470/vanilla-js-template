@@ -1,12 +1,17 @@
-/**
- * dashboard 模块清单（ModuleManifest，ARCHITECTURE.md 3.2 节）。
- * 懒加载：路由进入时才 import 视图代码与语言包。
- */
-export default {
+const manifest = {
   id: 'dashboard',
-  icon: 'dashboard',
+  icon: 'layout-dashboard',
   order: 1,
   i18nNamespace: 'dashboard',
   loadRoot: () => import('./index.js'),
   submodules: [],
+  title: { 'zh-CN': '仪表盘', 'zh-TW': '儀表板', en: 'Dashboard' },
+  route: '/',
+  load: 'index.js',
+  css: 'module.css',
+  deps: ['app/lib/chart.umd.js'],
+  i18nFile: 'i18n.js',
 };
+
+window.App?.registerModule(manifest);
+export default manifest;

@@ -60,8 +60,12 @@ function checkBanned(file) {
   if (src.includes('\t')) {
     errors.push(`禁止 Tab 缩进 → ${rel(file)}`);
   }
-  // 样式硬编码颜色检查（app/ 下 JS 内嵌样式与 CSS 文件；tokens.css 是唯一例外）
-  if (file.startsWith(join(ROOT, 'app')) && !file.endsWith('tokens.css')) {
+  // 样式硬编码颜色检查（app/ 下 JS 内嵌样式与 CSS 文件）。
+  // token 样式表与模板随附的静态 SVG/Chart.js 资源本身就是颜色定义，
+  // 不应被当作业务组件样式重复改写。
+  const tokenSheet = file.endsWith('tokens.css') || file.endsWith('semantic-tokens.css');
+  const staticColorAsset = file.endsWith(join('app', 'components', 'ui', 'icons.js')) || file.endsWith(join('app', 'lib', 'chart.umd.js'));
+  if (file.startsWith(join(ROOT, 'app')) && !tokenSheet && !staticColorAsset) {
     const m = src.match(HEX_COLOR);
     if (m) errors.push(`禁止硬编码十六进制颜色（色值 ${m[0]}，应消费 tokens.css 变量）→ ${rel(file)}:${lineOf(src, m.index)}`);
   }

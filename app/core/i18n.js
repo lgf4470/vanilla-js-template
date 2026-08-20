@@ -1,90 +1,430 @@
-/**
- * app/core/i18n.js
- * 国际化：zh-CN / zh-TW / en 三语言，壳层文案与模块文案均按需加载。
- * 语言包以 .json 文件存放（docs 约定），通过 fetch 按需拉取：
- *  - 壳层：app/locales/<lang>.json（bootstrap 启动时加载）
- *  - 模块：app/modules/<id>/locales/<lang>.json（随模块懒加载一起拉取）
- */
+/* ============================================================
+ * i18n.js — 核心国际化运行时(零依赖)
+ * ------------------------------------------------------------
+ * - 核心词典只包含 App Shell / 设置面板 / 公共 UI 文案
+ * - 各模块自有文案放在各自懒加载的 i18n.js(manifest 声明 i18nFile,模块内聚)
+ * - t(key, arg) 支持 {n} 插值;查找顺序:模块词典 → 核心词典 → key
+ * ============================================================ */
+(function () {
+  'use strict';
 
-import { LANGUAGE_CODES } from '../../shared/constants.js';
-import { loadJson } from './runtime.js';
+  var LOCALES = ['zh-CN', 'zh-TW', 'en'];
+  var DEFAULT_LOCALE = 'zh-CN';
+  var LOCALE_KEY = 'html-template-locale';
 
-const STORAGE_KEY = 'nova:lang';
+  var dict = {
+    en: {
+      'sidebar.main': 'Main',
+      'sidebar.workspaces': 'Workspaces',
+      'sidebar.createWorkspace': 'Create workspace',
+      'sidebar.profile': 'Profile',
+      'sidebar.settings': 'Settings',
+      'sidebar.signOut': 'Sign out',
+      'workspace.title': 'New workspace',
+      'workspace.editTitle': 'Edit workspace',
+      'workspace.zhCNLabel': 'Simplified Chinese',
+      'workspace.zhCNPlaceholder': 'Enter the Simplified Chinese name',
+      'workspace.enLabel': 'English',
+      'workspace.enPlaceholder': 'Enter the English name (identifier)',
+      'workspace.zhTWLabel': 'Traditional Chinese (optional)',
+      'workspace.zhTWPlaceholder': 'Enter the Traditional Chinese name',
+      'workspace.noteLabel': 'Note (optional)',
+      'workspace.notePlaceholder': 'Enter a note',
+      'workspace.iconLabel': 'Icon',
+      'workspace.colorLabel': 'Color',
+      'workspace.create': 'Create',
+      'workspace.save': 'Save',
+      'workspace.edit': 'Edit',
+      'workspace.delete': 'Delete',
+      'workspace.deleteTitle': 'Delete workspace',
+      'workspace.deleteDesc':
+        'This will delete the workspace and all of its data. This action cannot be undone.',
+      'workspace.deleteConfirm': 'Delete',
+      'workspace.cancel': 'Cancel',
+      'sidebar.profiles': 'Profiles',
+      'profiles.title': 'Profiles',
+      'profiles.desc':
+        'A profile saves a set of appearance, notification and display settings — switching applies them at once.',
+      'profiles.create': 'New profile',
+      'profiles.nameLabel': 'Name',
+      'profiles.namePlaceholder': 'Enter a profile name',
+      'profiles.rename': 'Rename',
+      'profiles.delete': 'Delete',
+      'profiles.deleteTitle': 'Delete profile',
+      'profiles.deleteDesc':
+        'The profile and the appearance, notification and display settings it saved will be removed.',
+      'profiles.cancel': 'Cancel',
+      'profiles.save': 'Save',
+      'profiles.requiredName': 'Name is required',
+      'profiles.defaultName': 'Default',
+      'display.submenuHint':
+        'Submenu items are generated automatically from the module registry — no manual maintenance when adding modules.',
+      'workspace.requiredZhCN': 'Please enter the Simplified Chinese name',
+      'workspace.requiredEn': 'Please enter an English name (letters, numbers and dashes only)',
+      'workspace.enHint': 'Used to generate the workspace ID (ws-...)',
+      'avatar.title': 'Avatar',
+      'avatar.type.initial': 'Initial',
+      'avatar.type.icon': 'Icon',
+      'avatar.type.emoji': 'Emoji',
+      'avatar.type.image': 'Upload image',
+      'avatar.initialDesc':
+        'Uses the first letter of your username (or email); updates when you change it.',
+      'avatar.iconDesc': 'Pick a preset icon.',
+      'avatar.emojiDesc': 'Pick a preset emoji.',
+      'avatar.imageDesc': 'JPG, PNG or WebP, up to 200KB; auto-cropped to a square.',
+      'avatar.upload': 'Choose image',
+      'avatar.sizeError': 'The image must be smaller than 200KB.',
+      'avatar.typeError': 'Please choose an image file.',
+      'avatar.readError': 'Failed to process the image. Please try another one.',
+      'auth.title': 'Sign in',
+      'auth.description': 'Enter the access password to continue.',
+      'auth.passwordLabel': 'Access password',
+      'auth.passwordPlaceholder': 'Enter the access password',
+      'auth.expiryLabel': 'Session expires in',
+      'auth.login': 'Sign in',
+      'auth.required': 'Please enter the password',
+      'auth.error': 'Incorrect password or expired session',
+      'auth.footer': 'Protected by x-auth-password',
+      'auth.serverRequired': 'Server unreachable — start the app via `node dev-server.js`.',
+      'auth.expiry.3h': '3 hours',
+      'auth.expiry.6h': '6 hours',
+      'auth.expiry.9h': '9 hours',
+      'auth.expiry.12h': '12 hours',
+      'auth.expiry.24h': '24 hours',
+      'auth.expiry.7d': '7 days',
+      'auth.expiry.14d': '14 days',
+      'auth.expiry.30d': '30 days',
+      'auth.expiry.browser': 'Until browser is closed',
+      'header.system': 'System',
+      'header.light': 'Light',
+      'header.dark': 'Dark',
+      'header.language': 'Language',
+      'placeholder.wip': 'Work in progress',
+      'placeholder.back': 'Back to Dashboard',
+      'notFound.desc': 'The page you are looking for does not exist or has been moved.',
+      'settings.title': 'Theme Settings',
+      'settings.description': 'Customize appearance, style and layout.',
+      'settings.appearance': 'Appearance',
+      'settings.radius': 'Corner radius',
+      'settings.radiusOptions.default': 'Default',
+      'settings.radiusOptions.none': 'None',
+      'settings.radiusOptions.sm': 'Small',
+      'settings.radiusOptions.md': 'Medium',
+      'settings.radiusOptions.lg': 'Large',
+      'settings.radiusOptions.full': 'Full',
+      'settings.bodyFont': 'Body font',
+      'settings.headingFont': 'Heading font',
+      'settings.layout': 'Layout',
+      'settings.layoutDesc':
+        'Sidebar variant and collapsible mode are fixed to inset / icon (same as the reference defaults).',
+      'settings.resetWidth': 'Reset sidebar width',
+      'settings.close': 'Close',
+      'settings.theme': 'Theme mode',
+      'settings.sidebar': 'Sidebar style',
+      'settings.style': 'Style',
+      'settings.baseColor': 'Base color',
+      'settings.chartColor': 'Accent color',
+      'settings.menuColor': 'Menu color',
+      'settings.menuAppearance': 'Menu appearance',
+      'settings.iconLibrary': 'Icon library',
+      'settings.lucide': 'Lucide',
+      'settings.menuAccent': 'Menu accent',
+      'settings.subtle': 'Subtle',
+      'settings.resetAll': 'Reset all settings',
+      'settings.variantOptions.inset': 'Inset',
+      'settings.variantOptions.floating': 'Floating',
+      'settings.variantOptions.sidebar': 'Sidebar',
+      'settings.layoutOptions.default': 'Default',
+      'settings.layoutOptions.icon': 'Icon',
+      'settings.layoutOptions.offcanvas': 'Off-canvas',
+      'settings.menuColorOptions.default': 'Default',
+      'settings.menuColorOptions.inverted': 'Inverted',
+      'settings.menuAppearanceOptions.solid': 'Solid',
+      'settings.menuAppearanceOptions.translucent': 'Translucent',
+    },
+    'zh-CN': {
+      'sidebar.main': '主菜单',
+      'sidebar.workspaces': '工作空间',
+      'sidebar.createWorkspace': '新增工作空间',
+      'sidebar.profile': '个人资料',
+      'sidebar.settings': '设置',
+      'sidebar.signOut': '退出登录',
+      'workspace.title': '新增工作空间',
+      'workspace.editTitle': '编辑工作空间',
+      'workspace.zhCNLabel': '简体中文',
+      'workspace.zhCNPlaceholder': '输入简体中文名称',
+      'workspace.enLabel': '英文',
+      'workspace.enPlaceholder': '输入英文名称(作为标识)',
+      'workspace.zhTWLabel': '繁体中文(可选)',
+      'workspace.zhTWPlaceholder': '输入繁体中文名称',
+      'workspace.noteLabel': '备注(可选)',
+      'workspace.notePlaceholder': '输入备注',
+      'workspace.iconLabel': '图标',
+      'workspace.colorLabel': '颜色',
+      'workspace.create': '创建',
+      'workspace.save': '保存',
+      'workspace.edit': '编辑',
+      'workspace.delete': '删除',
+      'workspace.deleteTitle': '删除工作空间',
+      'workspace.deleteDesc': '将删除该工作空间及其全部数据,此操作不可撤销。',
+      'workspace.deleteConfirm': '删除',
+      'workspace.cancel': '取消',
+      'sidebar.profiles': '配置文件',
+      'profiles.title': '配置文件',
+      'profiles.desc': '配置文件保存一组 外观/通知/显示 设置,切换即整体生效。',
+      'profiles.create': '新建配置文件',
+      'profiles.nameLabel': '名称',
+      'profiles.namePlaceholder': '输入配置文件名称',
+      'profiles.rename': '重命名',
+      'profiles.delete': '删除',
+      'profiles.deleteTitle': '删除配置文件',
+      'profiles.deleteDesc': '将删除该配置文件及其保存的外观/通知/显示设置。',
+      'profiles.cancel': '取消',
+      'profiles.save': '保存',
+      'profiles.requiredName': '请输入名称',
+      'profiles.defaultName': '默认',
+      'display.submenuHint': '二级菜单项由模块注册表自动生成,新增模块无需手动维护。',
+      'workspace.requiredZhCN': '请输入简体中文名称',
+      'workspace.requiredEn': '请输入英文名称(仅字母、数字、连字符)',
+      'workspace.enHint': '用于生成工作空间标识(ws-…)',
+      'avatar.title': '头像',
+      'avatar.type.initial': '首字母',
+      'avatar.type.icon': '图标',
+      'avatar.type.emoji': 'Emoji',
+      'avatar.type.image': '上传图片',
+      'avatar.initialDesc': '自动使用用户名(或邮箱)首字母,修改用户名后同步更新。',
+      'avatar.iconDesc': '从预设图标中选择。',
+      'avatar.emojiDesc': '从预设 Emoji 中选择。',
+      'avatar.imageDesc': '支持 JPG/PNG/WebP,不超过 200KB,上传后自动居中裁切为方形。',
+      'avatar.upload': '选择图片',
+      'avatar.sizeError': '图片大小不能超过 200KB。',
+      'avatar.typeError': '请选择图片文件。',
+      'avatar.readError': '图片处理失败,请换一张重试。',
+      'auth.title': '登录',
+      'auth.description': '请输入访问密码以继续。',
+      'auth.passwordLabel': '访问密码',
+      'auth.passwordPlaceholder': '输入访问密码',
+      'auth.expiryLabel': '会话有效期',
+      'auth.login': '登录',
+      'auth.required': '请输入访问密码',
+      'auth.error': '密码错误或会话已失效',
+      'auth.footer': 'x-auth-password 鉴权保护',
+      'auth.serverRequired': '无法连接服务器,请通过 node dev-server.js 启动应用后再登录。',
+      'auth.expiry.3h': '3 小时',
+      'auth.expiry.6h': '6 小时',
+      'auth.expiry.9h': '9 小时',
+      'auth.expiry.12h': '12 小时',
+      'auth.expiry.24h': '24 小时',
+      'auth.expiry.7d': '7 天',
+      'auth.expiry.14d': '14 天',
+      'auth.expiry.30d': '30 天',
+      'auth.expiry.browser': '下一次浏览器打开',
+      'header.system': '跟随系统',
+      'header.light': '浅色',
+      'header.dark': '深色',
+      'header.language': '语言',
+      'placeholder.wip': '开发中',
+      'placeholder.back': '返回仪表盘',
+      'notFound.desc': '您访问的页面不存在或已被移动。',
+      'settings.title': '主题设置',
+      'settings.description': '自定义外观、风格与布局。',
+      'settings.appearance': '外观',
+      'settings.radius': '圆角',
+      'settings.radiusOptions.default': '默认',
+      'settings.radiusOptions.none': '无',
+      'settings.radiusOptions.sm': '小',
+      'settings.radiusOptions.md': '中',
+      'settings.radiusOptions.lg': '大',
+      'settings.radiusOptions.full': '全圆角',
+      'settings.bodyFont': '正文字体',
+      'settings.headingFont': '标题字体',
+      'settings.layout': '布局',
+      'settings.layoutDesc': '侧边栏样式与折叠模式固定为 inset / 图标模式(与参考项目默认一致)。',
+      'settings.resetWidth': '重置侧边栏宽度',
+      'settings.close': '关闭',
+      'settings.theme': '主题模式',
+      'settings.sidebar': '侧边栏样式',
+      'settings.style': '风格',
+      'settings.baseColor': '基础色',
+      'settings.chartColor': '强调色',
+      'settings.menuColor': '菜单颜色',
+      'settings.menuAppearance': '菜单外观',
+      'settings.iconLibrary': '图标库',
+      'settings.lucide': 'Lucide',
+      'settings.menuAccent': '菜单强调',
+      'settings.subtle': 'Subtle',
+      'settings.resetAll': '重置全部设置',
+      'settings.variantOptions.inset': '内嵌',
+      'settings.variantOptions.floating': '悬浮',
+      'settings.variantOptions.sidebar': '侧边栏',
+      'settings.layoutOptions.default': '默认',
+      'settings.layoutOptions.icon': '图标',
+      'settings.layoutOptions.offcanvas': '全屏',
+      'settings.menuColorOptions.default': '默认',
+      'settings.menuColorOptions.inverted': '反色',
+      'settings.menuAppearanceOptions.solid': '实色',
+      'settings.menuAppearanceOptions.translucent': '半透明',
+    },
+    'zh-TW': {
+      'sidebar.main': '主選單',
+      'sidebar.workspaces': '工作空間',
+      'sidebar.createWorkspace': '新增工作空間',
+      'sidebar.profile': '個人資料',
+      'sidebar.settings': '設定',
+      'sidebar.signOut': '登出',
+      'workspace.title': '新增工作空間',
+      'workspace.editTitle': '編輯工作空間',
+      'workspace.zhCNLabel': '簡體中文',
+      'workspace.zhCNPlaceholder': '輸入簡體中文名稱',
+      'workspace.enLabel': '英文',
+      'workspace.enPlaceholder': '輸入英文名稱(作為識別碼)',
+      'workspace.zhTWLabel': '繁體中文(可選)',
+      'workspace.zhTWPlaceholder': '輸入繁體中文名稱',
+      'workspace.noteLabel': '備註(可選)',
+      'workspace.notePlaceholder': '輸入備註',
+      'workspace.iconLabel': '圖示',
+      'workspace.colorLabel': '顏色',
+      'workspace.create': '建立',
+      'workspace.save': '儲存',
+      'workspace.edit': '編輯',
+      'workspace.delete': '刪除',
+      'workspace.deleteTitle': '刪除工作空間',
+      'workspace.deleteDesc': '將刪除該工作空間及其全部資料,此操作無法復原。',
+      'workspace.deleteConfirm': '刪除',
+      'workspace.cancel': '取消',
+      'sidebar.profiles': '設定檔',
+      'profiles.title': '設定檔',
+      'profiles.desc': '設定檔保存一組 外觀/通知/顯示 設定,切換即整體生效。',
+      'profiles.create': '新增設定檔',
+      'profiles.nameLabel': '名稱',
+      'profiles.namePlaceholder': '輸入設定檔名稱',
+      'profiles.rename': '重新命名',
+      'profiles.delete': '刪除',
+      'profiles.deleteTitle': '刪除設定檔',
+      'profiles.deleteDesc': '將刪除該設定檔及其保存的外觀/通知/顯示設定。',
+      'profiles.cancel': '取消',
+      'profiles.save': '儲存',
+      'profiles.requiredName': '請輸入名稱',
+      'profiles.defaultName': '預設',
+      'display.submenuHint': '二級選單項目由模組註冊表自動產生,新增模組無需手動維護。',
+      'workspace.requiredZhCN': '請輸入簡體中文名稱',
+      'workspace.requiredEn': '請輸入英文名稱(僅字母、數字、連字元)',
+      'workspace.enHint': '用於產生工作空間識別碼(ws-…)',
+      'avatar.title': '頭像',
+      'avatar.type.initial': '首字母',
+      'avatar.type.icon': '圖示',
+      'avatar.type.emoji': 'Emoji',
+      'avatar.type.image': '上傳圖片',
+      'avatar.initialDesc': '自動使用使用者名稱(或信箱)首字母,修改使用者名稱後同步更新。',
+      'avatar.iconDesc': '從預設圖示中選擇。',
+      'avatar.emojiDesc': '從預設 Emoji 中選擇。',
+      'avatar.imageDesc': '支援 JPG/PNG/WebP,不超過 200KB,上傳後自動居中裁切為方形。',
+      'avatar.upload': '選擇圖片',
+      'avatar.sizeError': '圖片大小不能超過 200KB。',
+      'avatar.typeError': '請選擇圖片檔案。',
+      'avatar.readError': '圖片處理失敗,請換一張重試。',
+      'auth.title': '登入',
+      'auth.description': '請輸入存取密碼以繼續。',
+      'auth.passwordLabel': '存取密碼',
+      'auth.passwordPlaceholder': '輸入存取密碼',
+      'auth.expiryLabel': '工作階段有效期限',
+      'auth.login': '登入',
+      'auth.required': '請輸入存取密碼',
+      'auth.error': '密碼錯誤或工作階段已失效',
+      'auth.footer': 'x-auth-password 鑑權保護',
+      'auth.serverRequired': '無法連線伺服器,請透過 node dev-server.js 啟動應用程式後再登入。',
+      'auth.expiry.3h': '3 小時',
+      'auth.expiry.6h': '6 小時',
+      'auth.expiry.9h': '9 小時',
+      'auth.expiry.12h': '12 小時',
+      'auth.expiry.24h': '24 小時',
+      'auth.expiry.7d': '7 天',
+      'auth.expiry.14d': '14 天',
+      'auth.expiry.30d': '30 天',
+      'auth.expiry.browser': '下一次瀏覽器開啟',
+      'header.system': '跟隨系統',
+      'header.light': '淺色',
+      'header.dark': '深色',
+      'header.language': '語言',
+      'placeholder.wip': '開發中',
+      'placeholder.back': '返回儀表板',
+      'notFound.desc': '您造訪的頁面不存在或已被移動。',
+      'settings.title': '主題設定',
+      'settings.description': '自訂外觀、風格與佈局。',
+      'settings.appearance': '外觀',
+      'settings.radius': '圓角',
+      'settings.radiusOptions.default': '預設',
+      'settings.radiusOptions.none': '無',
+      'settings.radiusOptions.sm': '小',
+      'settings.radiusOptions.md': '中',
+      'settings.radiusOptions.lg': '大',
+      'settings.radiusOptions.full': '全圓角',
+      'settings.bodyFont': '正文字體',
+      'settings.headingFont': '標題字體',
+      'settings.layout': '佈局',
+      'settings.layoutDesc': '側邊欄樣式與收合模式固定為 inset / 圖示模式(與參考專案預設一致)。',
+      'settings.resetWidth': '重設側邊欄寬度',
+      'settings.close': '關閉',
+      'settings.theme': '主題模式',
+      'settings.sidebar': '側邊欄樣式',
+      'settings.style': '風格',
+      'settings.baseColor': '基礎色',
+      'settings.chartColor': '強調色',
+      'settings.menuColor': '選單顏色',
+      'settings.menuAppearance': '選單外觀',
+      'settings.iconLibrary': '圖示庫',
+      'settings.lucide': 'Lucide',
+      'settings.menuAccent': '選單強調',
+      'settings.subtle': 'Subtle',
+      'settings.resetAll': '重設全部設定',
+      'settings.variantOptions.inset': '內嵌',
+      'settings.variantOptions.floating': '懸浮',
+      'settings.variantOptions.sidebar': '側邊欄',
+      'settings.layoutOptions.default': '預設',
+      'settings.layoutOptions.icon': '圖示',
+      'settings.layoutOptions.offcanvas': '全螢幕',
+      'settings.menuColorOptions.default': '預設',
+      'settings.menuColorOptions.inverted': '反色',
+      'settings.menuAppearanceOptions.solid': '實色',
+      'settings.menuAppearanceOptions.translucent': '半透明',
+    },
+  };
 
-function detectLanguage() {
-  let saved = null;
-  try {
-    saved = localStorage.getItem(STORAGE_KEY);
-  } catch {
-    /* file:// 某些浏览器会禁用存储，使用浏览器语言继续启动 */
-  }
-  if (saved && LANGUAGE_CODES.includes(saved)) return saved;
-  const nav = (navigator.language || 'zh-CN').toLowerCase();
-  if (nav.includes('tw') || nav.includes('hant')) return 'zh-TW';
-  if (nav.startsWith('zh')) return 'zh-CN';
-  return 'en';
-}
-
-class I18n {
-  constructor() {
-    this.lang = detectLanguage();
-    /** @type {Record<string, any>} 全部已加载文案的合并映射（key 带模块命名空间前缀） */
-    this.messages = {};
-    this._listeners = new Set();
-  }
-
-  /** 加载壳层文案（common / sidebar / auth 命名空间） */
-  async loadShell() {
-    const msgs = await this._fetchPack(`/app/locales/${this.lang}.json`);
-    Object.assign(this.messages, msgs || {});
-    document.documentElement.lang = this.lang.toLowerCase().replace('_', '-');
-    return this.messages;
-  }
-
-  /** 合并模块语言包（模块名称为命名空间前缀，如 notes.title） */
-  merge(pack) {
-    Object.assign(this.messages, pack || {});
-  }
-
-  /** 获取语言包（相对导入者目录的路径，由调用方保证） */
-  async _fetchPack(url) {
-    try {
-      return await loadJson(url, import.meta.url);
-    } catch {
-      return null;
+  /** 翻译:t(key, arg) 支持 {n} 插值;extra 为模块词典(按语言分组的扁平键值) */
+  function translate(locale, key, arg, extra) {
+    var d = dict[locale] || dict[DEFAULT_LOCALE];
+    var de = dict[DEFAULT_LOCALE];
+    var text = null;
+    if (extra) {
+      text =
+        (extra[locale] && extra[locale][key]) ||
+        (extra[DEFAULT_LOCALE] && extra[DEFAULT_LOCALE][key]) ||
+        null;
     }
+    if (text == null) text = d[key] || de[key] || key;
+    return arg !== undefined ? String(text).replace('{n}', String(arg)) : text;
   }
 
-  /** 切换语言：重新加载壳层文案并广播变更（设置页语言选择调用） */
-  async switch(lang) {
-    if (!LANGUAGE_CODES.includes(lang) || lang === this.lang) return;
-    this.lang = lang;
-    try {
-      localStorage.setItem(STORAGE_KEY, lang);
-    } catch {
-      /* file:// 存储不可用时仍允许本次页面切换 */
-    }
-    await this.loadShell();
-    for (const fn of this._listeners) fn(this.lang);
+  /** 从 locale 映射(如 manifest.title)中取值,带默认语言兜底 */
+  function pick(map, locale) {
+    if (!map) return '';
+    return map[locale] || map[DEFAULT_LOCALE] || map.en || '';
   }
 
-  onChange(fn) {
-    this._listeners.add(fn);
-    return () => this._listeners.delete(fn);
+  /** 生成翻译函数;moduleDict 为可选模块词典(按语言分组) */
+  function makeT(locale, moduleDict) {
+    return function (key, arg) {
+      return translate(locale, key, arg, moduleDict);
+    };
   }
 
-  /**
-   * 取文案：i18n.t('notes.list.empty')，支持 {name} 占位符。
-   * 缺失时原样返回 key，便于发现漏翻译。
-   */
-  t(key, params = {}) {
-    const value = key.split('.').reduce((o, k) => (o == null ? o : o[k]), this.messages);
-    if (value == null) return key;
-    return String(value).replace(/\{(\w+)\}/g, (m, name) =>
-      Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : m,
-    );
-  }
-}
-
-export const i18n = new I18n();
-export const t = (key, params) => i18n.t(key, params);
+  window.App = window.App || {};
+  App.i18n = {
+    LOCALES: LOCALES,
+    DEFAULT_LOCALE: DEFAULT_LOCALE,
+    LOCALE_KEY: LOCALE_KEY,
+    translate: translate,
+    pick: pick,
+    makeT: makeT,
+  };
+})();
