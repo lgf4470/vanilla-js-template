@@ -3,11 +3,15 @@
  * 前后端共享常量（跨模块复用先"毕业"到这里，禁止模块之间互相 import）。
  */
 
-/** 支持的语言（与 app/locales、各模块 locales/ 一一对应） */
+/** 支持的语言（与 app/core/i18n.js、各模块 i18n.js 三语言对象一一对应） */
 export const LANGUAGE_CODES = ['zh-CN', 'zh-TW', 'en'];
 
-/** 鉴权请求头（见 ARCHITECTURE.md 4.3 节） */
-export const AUTH_HEADER = 'x-auth-password';
+/**
+ * 会话鉴权请求头（见 ARCHITECTURE.md 4.2 节）。
+ * 注意:x-auth-password 只是 API Hub 的 global-password 兜底鉴权模式,
+ * 会话门禁一律使用 x-auth-token。
+ */
+export const AUTH_HEADER = 'x-auth-token';
 
 /**
  * 会话时长选项（见 ARCHITECTURE.md 4.3 节 8+1 布局）：
@@ -60,14 +64,5 @@ export const SETTING_KEYS = {
 };
 
 /** 用户资料字段（敏感字段清单，见 ARCHITECTURE.md 4.6 节：邮箱/姓名/性别/年龄/地址/电话/用户名） */
-export const PROFILE_FIELDS = ['username', 'name', 'gender', 'age', 'email', 'phone', 'address'];
-
-/** 数据库驱动名 */
+export const PROFILE_FIELDS = ['username', 'name', 'gender', 'age', 'email', 'phone', 'address'];/** 数据库驱动名 */
 export const DB_DRIVERS = ['sqlite', 'd1', 'turso'];
-
-/** 只读 GET 接口的默认缓存层（天/小时，见 ARCHITECTURE.md 4.7 节） */
-export const CACHE_TTL = {
-  settingsSnapshot: 60, // 秒，进程内存快照
-  listNotes: 30, // 秒
-  listConversations: 30,
-};
