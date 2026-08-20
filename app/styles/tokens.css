@@ -249,3 +249,18 @@
 .auth-submit:hover { opacity: 0.9; }
 .auth-submit:disabled { opacity: 0.5; cursor: default; }
 .auth-footer { font-size: 0.75rem; color: var(--muted-foreground); }
+
+/* ---------- API Hub 语义色(方法徽标/响应状态/语法高亮/标签;apihub 模块消费) ----------
+ * 色值由模块内硬编码迁移而来,保持原视觉不变;模块 CSS 禁止再写死这些颜色。 */
+:root {
+  --hub-method-get: #16a34a;
+  --hub-method-post: #2563eb;
+  --hub-method-put: #d97706;
+  --hub-method-patch: #9333ea;
+  --hub-method-delete: #dc2626;
+  --hub-method-head: #64748b;
+  --hub-method-options: #64748b;
+  --hub-danger: #ef4444;
+  --hub-tag: #71717a;
+  --hub-hl-null: #94a3b8;
+}
