@@ -723,43 +723,22 @@
     runRequest();
   }
 
-  /* ---------- 弹窗(自研,类 shadcn Dialog;禁用 window.prompt/confirm) ---------- */
+  /* ---------- 弹窗(公共 App.ui.dialog;禁用 window.prompt/confirm) ---------- */
   function openDialog(opts) {
-    closeDialog();
-    var overlay = document.createElement('div');
-    overlay.className = 'hub-overlay';
-    overlay.setAttribute('data-hub-overlay', '');
-    overlay.innerHTML =
-      '<div class="hub-dialog">' +
-      '<div class="hub-dialog-head">' +
-      '<div><div class="hub-dialog-title">' +
-      opts.title +
-      '</div>' +
-      (opts.desc ? '<div class="hub-dialog-desc">' + opts.desc + '</div>' : '') +
-      '</div>' +
-      '<button type="button" class="hub-dialog-close" data-hub-dlg-close aria-label="' +
-      t('apihub.cancel') +
-      '">' +
-      icon('x') +
-      '</button>' +
-      '</div>' +
-      '<div class="hub-dialog-body">' +
-      opts.body +
-      '</div>' +
-      '<div class="hub-dialog-foot">' +
-      opts.foot +
-      '</div>' +
-      '</div>';
-    document.body.appendChild(overlay);
-    overlay.addEventListener('click', function (e) {
-      if (e.target === overlay) closeDialog();
+    return App.ui.dialog({
+      head:
+        '<div class="ui-dialog-title">' +
+        opts.title +
+        '</div>' +
+        (opts.desc ? '<div class="ui-dialog-desc">' + opts.desc + '</div>' : ''),
+      body: opts.body,
+      foot: opts.foot,
+      closeLabel: t('apihub.cancel'),
     });
-    return overlay;
   }
 
   function closeDialog() {
-    var ov = document.querySelector('[data-hub-overlay]');
-    if (ov) ov.remove();
+    App.ui.closeDialog();
   }
 
   function confirmDialog(title, msg, okLabel, onOk, danger) {

@@ -548,7 +548,7 @@
   background: var(--primary);
 }
 
-/* ---------- 弹窗 ---------- */
+/* ---------- 弹层(抽屉;居中确认弹窗已迁移公共 App.ui.dialog) ---------- */
 .tk-overlay {
   position: fixed;
   inset: 0;
@@ -558,42 +558,6 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
-}
-.tk-dialog {
-  width: 100%;
-  max-width: 26rem;
-  border-radius: 0.5rem;
-  border: 1px solid var(--border);
-  background: var(--background);
-  box-shadow: 0 16px 48px rgb(0 0 0 / 0.2);
-}
-.tk-dialog-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-}
-.tk-dialog-head h2 {
-  font-size: 1rem;
-  font-weight: 600;
-}
-.tk-dialog-head p {
-  font-size: 0.875rem;
-  color: var(--muted-foreground);
-  margin-top: 0.25rem;
-}
-.tk-dialog-body {
-  padding: 0 1.25rem 1rem;
-  font-size: 0.875rem;
-  color: var(--muted-foreground);
-}
-.tk-dialog-foot {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  padding: 1rem 1.25rem;
-  border-top: 1px solid var(--border);
 }
 .tk-alert {
   display: flex;

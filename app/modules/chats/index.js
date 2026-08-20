@@ -281,7 +281,6 @@
   var state = {
     search: '',
     selectedId: null,
-    newChatOpen: false,
     newSearch: '',
     selectedUsers: [],
   };
@@ -554,25 +553,19 @@
 
     html += '</div></div>';
 
-    /* 新建消息弹窗 */
-    if (state.newChatOpen) {
-      var all = usersWithoutMessages();
-      var q2 = state.newSearch.trim().toLowerCase();
-      var filtered = all.filter(function (u) {
-        return u.fullName.toLowerCase().indexOf(q2) !== -1;
-      });
-      html +=
-        '<div class="ch-overlay" data-ch-overlay>' +
-        '<div class="ch-dialog">' +
-        '<div class="ch-dialog-head">' +
-        '<h2>' +
-        t('chats.newMessage') +
-        '</h2>' +
-        '<button type="button" class="ch-icon-btn" data-ch-close aria-label="Close">' +
-        icon().iconSvg('x', { class: 'size-5' }) +
-        '</button>' +
-        '</div>' +
-        '<div class="ch-dialog-body">' +
+    return html;
+  }
+
+  /* ---------- 新建消息弹窗(公共 App.ui.dialog;内容随选择/搜索动态更新) ---------- */
+  function newChatDialogParts(t) {
+    var all = usersWithoutMessages();
+    var q2 = state.newSearch.trim().toLowerCase();
+    var filtered = all.filter(function (u) {
+      return u.fullName.toLowerCase().indexOf(q2) !== -1;
+    });
+    return {
+      head: '<h2 class="ui-dialog-title">' + t('chats.newMessage') + '</h2>',
+      body:
         '<div class="ch-to-row">' +
         '<span class="ch-to-label">' +
         t('chats.to') +
@@ -632,18 +625,32 @@
               .join('')
           : '<div class="ch-no-people">' + t('chats.noPeople') + '</div>') +
         '</div>' +
-        '</div>' +
-        '</div>' +
-        '<div class="ch-dialog-foot">' +
+        '</div>',
+      foot:
         '<button type="button" class="ch-primary-btn" data-ch-send-new disabled>' +
         t('chats.chat') +
-        '</button>' +
-        '</div>' +
-        '</div>' +
-        '</div>';
-    }
+        '</button>',
+    };
+  }
 
-    return html;
+  function openNewChatDialog() {
+    var locale = App.getShellContext().settings.locale;
+    var t = App.i18n.makeT(locale, window.__moduleI18n && window.__moduleI18n.chats);
+    var parts = newChatDialogParts(t);
+    App.ui.dialog({ head: parts.head, body: parts.body, foot: parts.foot });
+  }
+
+  /** 弹窗内容变化(选人/搜索/移除标签)后仅刷新弹窗本体,避免重渲整个页面 */
+  function updateNewChatDialog() {
+    var overlay = document.querySelector('[data-dialog-overlay]');
+    if (!overlay) return;
+    var locale = App.getShellContext().settings.locale;
+    var t = App.i18n.makeT(locale, window.__moduleI18n && window.__moduleI18n.chats);
+    var parts = newChatDialogParts(t);
+    var body = overlay.querySelector('.ui-dialog-body');
+    if (body) body.innerHTML = parts.body;
+    var foot = overlay.querySelector('.ui-dialog-foot');
+    if (foot) foot.innerHTML = parts.foot;
   }
 
   /* ---------- 交互(document 级事件委托) ---------- */
@@ -665,7 +672,7 @@
     var people = e.target.closest('[data-ch-people-search]');
     if (people) {
       state.newSearch = people.value;
-      rerender();
+      updateNewChatDialog();
     }
   });
 
@@ -677,15 +684,9 @@
       return;
     }
     if (e.target.closest('[data-ch-new]')) {
-      state.newChatOpen = true;
       state.newSearch = '';
       state.selectedUsers = [];
-      rerender();
-      return;
-    }
-    if (e.target.closest('[data-ch-close]') || e.target.closest('[data-ch-overlay]')) {
-      state.newChatOpen = false;
-      rerender();
+      openNewChatDialog();
       return;
     }
     if (e.target.closest('[data-ch-back]')) {
@@ -706,7 +707,7 @@
       });
       if (idx === -1) state.selectedUsers.push(u);
       else state.selectedUsers.splice(idx, 1);
-      rerender();
+      updateNewChatDialog();
       return;
     }
     var rm = e.target.closest('[data-ch-tag-remove]');
@@ -715,7 +716,7 @@
       state.selectedUsers = state.selectedUsers.filter(function (s) {
         return s.id !== rid;
       });
-      rerender();
+      updateNewChatDialog();
       return;
     }
     var sendNew = e.target.closest('[data-ch-send-new]');
@@ -724,7 +725,7 @@
       var locale = App.getShellContext().settings.locale;
       var tt = App.i18n.makeT(locale, window.__moduleI18n && window.__moduleI18n.chats);
       var label = tt('chats.selected').replace('{count}', String(state.selectedUsers.length));
-      state.newChatOpen = false;
+      App.ui.closeDialog();
       App.ui.toast(
         state.selectedUsers
           .map(function (u) {

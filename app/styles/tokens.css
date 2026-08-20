@@ -297,3 +297,85 @@
   font-size: 0.875rem;
   color: var(--muted-foreground);
 }
+
+/* ---------- 公共弹窗(ui.js dialog;类 shadcn Dialog,替代原生 confirm/prompt) ---------- */
+.ui-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 0.5);
+  padding: calc(var(--spacing) * 4);
+}
+.ui-dialog {
+  width: 100%;
+  max-width: 30rem;
+  max-height: min(80vh, 40rem);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 1.2);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 20px 50px -12px rgb(0 0 0 / 0.4);
+}
+.ui-dialog-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: calc(var(--spacing) * 2);
+  padding: calc(var(--spacing) * 5) calc(var(--spacing) * 5) 0;
+}
+.ui-dialog-head-main {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing) * 1);
+  min-width: 0;
+}
+.ui-dialog-title {
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: var(--font-heading-base, inherit);
+  letter-spacing: -0.01em;
+}
+.ui-dialog-desc {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+  line-height: 1.5;
+}
+.ui-dialog-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: calc(var(--radius) * 0.6);
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  outline: none;
+  flex: none;
+}
+.ui-dialog-close:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}
+.ui-dialog-close svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+.ui-dialog-body {
+  padding: calc(var(--spacing) * 4) calc(var(--spacing) * 5);
+  font-size: 0.875rem;
+}
+.ui-dialog-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: calc(var(--spacing) * 2);
+  padding: calc(var(--spacing) * 4) calc(var(--spacing) * 5);
+  border-top: 1px solid var(--border);
+}

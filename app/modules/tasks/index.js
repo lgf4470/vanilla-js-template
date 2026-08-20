@@ -1063,119 +1063,110 @@
   function confirmHtml(t) {
     if (state.dialog === 'delete') {
       var row = state.currentRow;
-      return (
-        '<div class="tk-dialog">' +
-        '<div class="tk-dialog-head">' +
-        '<span class="flex size-8 items-center justify-center rounded-full bg-destructive/10 text-destructive">' +
-        icon().iconSvg('triangle-alert', { class: 'size-4' }) +
-        '</span>' +
-        '<h3 class="text-base font-semibold text-destructive">' +
-        t('tasks.deleteTitle', row.id) +
-        '</h3>' +
-        '</div>' +
-        '<p class="text-sm text-muted-foreground">' +
-        t('tasks.deleteDescBefore') +
-        ' <strong>' +
-        row.id +
-        '</strong>. ' +
-        t('tasks.deleteDescAfter') +
-        '</p>' +
-        '<div class="tk-dialog-foot">' +
-        '<button type="button" data-task-dialog-close class="' +
-        App.ui.buttonClass('outline') +
-        '">' +
-        t('tasks.deleteCancel') +
-        '</button>' +
-        '<button type="button" data-task-confirm-delete class="' +
-        App.ui.buttonClass('destructive') +
-        '">' +
-        t('tasks.deleteConfirm') +
-        '</button>' +
-        '</div></div>'
-      );
+      return {
+        head:
+          '<span class="flex size-8 items-center justify-center rounded-full bg-destructive/10 text-destructive">' +
+          icon().iconSvg('triangle-alert', { class: 'size-4' }) +
+          '</span>' +
+          '<h3 class="text-base font-semibold text-destructive">' +
+          t('tasks.deleteTitle', row.id) +
+          '</h3>',
+        body:
+          '<p class="text-sm text-muted-foreground">' +
+          t('tasks.deleteDescBefore') +
+          ' <strong>' +
+          row.id +
+          '</strong>. ' +
+          t('tasks.deleteDescAfter') +
+          '</p>',
+        foot:
+          '<button type="button" data-task-dialog-close class="' +
+          App.ui.buttonClass('outline') +
+          '">' +
+          t('tasks.deleteCancel') +
+          '</button>' +
+          '<button type="button" data-task-confirm-delete class="' +
+          App.ui.buttonClass('destructive') +
+          '">' +
+          t('tasks.deleteConfirm') +
+          '</button>',
+      };
     }
     if (state.dialog === 'bulk-delete') {
       var n = selectedCount();
-      return (
-        '<div class="tk-dialog">' +
-        '<div class="tk-dialog-head">' +
-        '<span class="flex size-8 items-center justify-center rounded-full bg-destructive/10 text-destructive">' +
-        icon().iconSvg('triangle-alert', { class: 'size-4' }) +
-        '</span>' +
-        '<h3 class="text-base font-semibold text-destructive">' +
-        t(n > 1 ? 'tasks.bulkDeleteTitlePlural' : 'tasks.bulkDeleteTitle', n) +
-        '</h3>' +
-        '</div>' +
-        '<p class="mb-4 text-sm text-muted-foreground">' +
-        t('tasks.bulkDeleteDesc') +
-        '</p>' +
-        '<label class="tk-field">' +
-        '<span class="tk-label">' +
-        t('tasks.bulkDeleteType', 'DELETE') +
-        '</span>' +
-        '<input type="text" data-task-bulk-delete-input value="' +
-        esc(bulkDeleteInput) +
-        '" placeholder="' +
-        t('tasks.bulkDeletePlaceholder') +
-        '" class="tk-input" />' +
-        '</label>' +
-        '<div class="tk-alert">' +
-        '<strong>' +
-        t('tasks.warningTitle') +
-        '</strong>' +
-        '<p class="text-sm">' +
-        t('tasks.warningDesc') +
-        '</p>' +
-        '</div>' +
-        '<div class="tk-dialog-foot">' +
-        '<button type="button" data-task-dialog-close class="' +
-        App.ui.buttonClass('outline') +
-        '">' +
-        t('tasks.deleteCancel') +
-        '</button>' +
-        '<button type="button" data-task-confirm-bulk-delete class="' +
-        App.ui.buttonClass('destructive') +
-        '"' +
-        (bulkDeleteInput !== 'DELETE' ? ' disabled' : '') +
-        '>' +
-        t('tasks.deleteConfirm') +
-        '</button>' +
-        '</div></div>'
-      );
+      return {
+        head:
+          '<span class="flex size-8 items-center justify-center rounded-full bg-destructive/10 text-destructive">' +
+          icon().iconSvg('triangle-alert', { class: 'size-4' }) +
+          '</span>' +
+          '<h3 class="text-base font-semibold text-destructive">' +
+          t(n > 1 ? 'tasks.bulkDeleteTitlePlural' : 'tasks.bulkDeleteTitle', n) +
+          '</h3>',
+        body:
+          '<p class="mb-4 text-sm text-muted-foreground">' +
+          t('tasks.bulkDeleteDesc') +
+          '</p>' +
+          '<label class="tk-field">' +
+          '<span class="tk-label">' +
+          t('tasks.bulkDeleteType', 'DELETE') +
+          '</span>' +
+          '<input type="text" data-task-bulk-delete-input value="' +
+          esc(bulkDeleteInput) +
+          '" placeholder="' +
+          t('tasks.bulkDeletePlaceholder') +
+          '" class="tk-input" />' +
+          '</label>' +
+          '<div class="tk-alert">' +
+          '<strong>' +
+          t('tasks.warningTitle') +
+          '</strong>' +
+          '<p class="text-sm">' +
+          t('tasks.warningDesc') +
+          '</p>' +
+          '</div>',
+        foot:
+          '<button type="button" data-task-dialog-close class="' +
+          App.ui.buttonClass('outline') +
+          '">' +
+          t('tasks.deleteCancel') +
+          '</button>' +
+          '<button type="button" data-task-confirm-bulk-delete class="' +
+          App.ui.buttonClass('destructive') +
+          '"' +
+          (bulkDeleteInput !== 'DELETE' ? ' disabled' : '') +
+          '>' +
+          t('tasks.deleteConfirm') +
+          '</button>',
+      };
     }
     if (state.dialog === 'import') {
-      return (
-        '<div class="tk-dialog">' +
-        '<div class="tk-dialog-head">' +
-        '<h3 class="text-base font-semibold">' +
-        t('tasks.importTitle') +
-        '</h3>' +
-        '</div>' +
-        '<p class="text-sm text-muted-foreground">' +
-        t('tasks.importDesc') +
-        '</p>' +
-        '<div class="tk-field">' +
-        '<label class="tk-label">' +
-        t('tasks.importFile') +
-        '</label>' +
-        '<input type="file" data-task-import-file accept=".csv,text/csv" class="tk-input tk-file" />' +
-        '<p class="tk-file-hint">' +
-        t('tasks.importHint') +
-        '</p>' +
-        '</div>' +
-        '<div class="tk-dialog-foot">' +
-        '<button type="button" data-task-dialog-close class="' +
-        App.ui.buttonClass('outline') +
-        '">' +
-        t('tasks.importClose') +
-        '</button>' +
-        '<button type="button" data-task-confirm-import class="' +
-        App.ui.buttonClass('default') +
-        '">' +
-        t('tasks.importConfirm') +
-        '</button>' +
-        '</div></div>'
-      );
+      return {
+        head: '<h3 class="text-base font-semibold">' + t('tasks.importTitle') + '</h3>',
+        body:
+          '<p class="text-sm text-muted-foreground">' +
+          t('tasks.importDesc') +
+          '</p>' +
+          '<div class="tk-field">' +
+          '<label class="tk-label">' +
+          t('tasks.importFile') +
+          '</label>' +
+          '<input type="file" data-task-import-file accept=".csv,text/csv" class="tk-input tk-file" />' +
+          '<p class="tk-file-hint">' +
+          t('tasks.importHint') +
+          '</p>' +
+          '</div>',
+        foot:
+          '<button type="button" data-task-dialog-close class="' +
+          App.ui.buttonClass('outline') +
+          '">' +
+          t('tasks.importClose') +
+          '</button>' +
+          '<button type="button" data-task-confirm-import class="' +
+          App.ui.buttonClass('default') +
+          '">' +
+          t('tasks.importConfirm') +
+          '</button>',
+      };
     }
     return '';
   }
@@ -1184,6 +1175,7 @@
     var holder = document.querySelector('[data-tasks-dialog-root]');
     if (!holder) return;
     if (!state.dialog) {
+      App.ui.closeDialog();
       holder.innerHTML = '';
       return;
     }
@@ -1197,7 +1189,8 @@
         '</div></div>';
       return;
     }
-    holder.innerHTML = '<div class="tk-overlay" data-task-overlay>' + confirmHtml(t) + '</div>';
+    var dlg = confirmHtml(t);
+    App.ui.dialog({ head: dlg.head, body: dlg.body, foot: dlg.foot });
   }
 
   /* ---------- 状态更新与重绘 ---------- */

@@ -403,46 +403,6 @@
   }
 }
 
-/* ---------- 新建消息弹窗 ---------- */
-.ch-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 90;
-  background: rgb(0 0 0 / 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
-.ch-dialog {
-  width: 100%;
-  max-width: 30rem;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  border-radius: 0.5rem;
-  border: 1px solid var(--border);
-  background: var(--background);
-  box-shadow: 0 16px 48px rgb(0 0 0 / 0.2);
-}
-.ch-dialog-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--border);
-}
-.ch-dialog-head h2 {
-  font-size: 1rem;
-  font-weight: 600;
-}
-.ch-dialog-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: 1rem 1.25rem;
-  overflow-y: auto;
-}
 .ch-to-row {
   display: flex;
   align-items: baseline;
@@ -538,12 +498,6 @@
   text-align: center;
   font-size: 0.875rem;
   color: var(--muted-foreground);
-}
-.ch-dialog-foot {
-  display: flex;
-  justify-content: flex-end;
-  padding: 1rem 1.25rem;
-  border-top: 1px solid var(--border);
 }
 .ch-primary-btn {
   height: 2.25rem;

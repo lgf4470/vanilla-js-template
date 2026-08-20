@@ -446,6 +446,59 @@
     }, 2600);
   }
 
+  // ---------- Dialog(模态弹窗,类 shadcn Dialog;替代 window.confirm/prompt) ----------
+  /** opts: { head, body, foot, closeLabel } — 返回 overlay 元素,调用方可继续绑定事件 */
+  function dialog(opts) {
+    var hadOpen = !!document.querySelector('[data-dialog-overlay]');
+    closeDialog();
+    var o = opts || {};
+    var overlay = document.createElement('div');
+    overlay.className = 'ui-dialog-overlay';
+    overlay.setAttribute('data-dialog-overlay', '');
+    overlay.innerHTML =
+      '<div class="ui-dialog" role="dialog" aria-modal="true">' +
+      '<div class="ui-dialog-head">' +
+      '<div class="ui-dialog-head-main">' +
+      (o.head || '') +
+      '</div>' +
+      '<button type="button" class="ui-dialog-close" data-dialog-close aria-label="' +
+      escAttr(o.closeLabel || 'Close') +
+      '">' +
+      App.icon.iconSvg('x', { class: 'size-4' }) +
+      '</button>' +
+      '</div>' +
+      (o.body != null ? '<div class="ui-dialog-body">' + o.body + '</div>' : '') +
+      (o.foot != null ? '<div class="ui-dialog-foot">' + o.foot + '</div>' : '') +
+      '</div>';
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', function (e) {
+      if (
+        e.target === overlay ||
+        (e.target.closest && e.target.closest('[data-dialog-close]'))
+      ) {
+        closeDialog();
+      }
+    });
+    if (!hadOpen) {
+      var focusable = overlay.querySelector(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable) focusable.focus();
+    }
+    return overlay;
+  }
+
+  /** 关闭当前弹窗(幂等) */
+  function closeDialog() {
+    var ov = document.querySelector('[data-dialog-overlay]');
+    if (ov) ov.remove();
+  }
+
+  // Esc 关闭弹窗(全局单例监听;仅在存在弹窗时生效)
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeDialog();
+  });
+
   window.App = window.App || {};
   App.ui = {
     cn: cn,
@@ -467,6 +520,8 @@
     placeholderCard: placeholderCard,
     notFound: notFound,
     emptyState: emptyState,
+    dialog: dialog,
+    closeDialog: closeDialog,
     radio: {
       gridClass: rgGridClass,
       sectionTitle: radioSectionTitle,
