@@ -12,6 +12,7 @@
   line-height: 2rem;
   font-weight: 700;
   letter-spacing: -0.025em;
+  font-family: var(--font-heading-base, inherit);
 }
 .ap-head p {
   color: var(--muted-foreground);
@@ -163,6 +164,7 @@
 .ap-card h2 {
   font-weight: 600;
   margin-bottom: 0.25rem;
+  font-family: var(--font-heading-base, inherit);
 }
 .ap-card p {
   display: -webkit-box;

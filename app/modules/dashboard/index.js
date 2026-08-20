@@ -555,7 +555,7 @@
     return (
       '<div class="mx-auto flex max-w-7xl flex-col gap-4">' +
       '<div class="mb-2 flex items-center justify-between space-y-2">' +
-      '<h1 class="text-2xl font-bold tracking-tight">' +
+      '<h1 class="font-heading text-2xl font-bold tracking-tight">' +
       t('dashboard.title') +
       '</h1>' +
       '<button type="button" data-db-download class="' +
