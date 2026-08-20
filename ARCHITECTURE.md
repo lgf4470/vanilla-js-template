@@ -121,6 +121,8 @@ Docs 和 Settings 的子模块使用 `sub/<id>.js` 并调用 `App.defineModule({
 
 设置状态由 `app/core/settings.js` 管理并保存到 `html-template-*` 本地键；登录后与服务端 `app_settings` 双向同步。工作空间注册表和当前指针属于 `global` 作用域，其余设置按活跃工作空间隔离。
 
+设置页（`/settings/*`）内保存修改后经 `updateSettings()` → `App.rerenderContent()` 重渲染当前视图，以保证与服务端状态一致；由于设置页是左右两栏独立滚动的工作台布局（见 3.5），`app/core/app.js` 的 `rerenderContent()` 会在重渲染前保存 `.sp-content` 的 `scrollTop` 并在重建后恢复，避免切换开关/单选时右栏跳回顶部；左栏导航与右栏内容互不干扰。
+
 ## 3. 样式系统
 
 ### 3.1 样式分层
