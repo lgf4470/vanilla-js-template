@@ -97,6 +97,11 @@
     );
   }
 
+  // ---------- Input(表单输入框/文本域;各模块统一使用) ----------
+  function inputClass(extra) {
+    return cn('ui-input', extra);
+  }
+
   // ---------- Dropdown ----------
   function dropdownTriggerClass(extra) {
     return cn(
@@ -511,6 +516,7 @@
     cardTitleClass: cardTitleClass,
     cardContentClass: cardContentClass,
     toggleItemClass: toggleItemClass,
+    inputClass: inputClass,
     dropdownTriggerClass: dropdownTriggerClass,
     dropdownContentClass: dropdownContentClass,
     dropdownItemClass: dropdownItemClass,

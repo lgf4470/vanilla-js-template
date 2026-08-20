@@ -983,7 +983,7 @@
       esc(draft.title) +
       '" placeholder="' +
       t('tasks.drawer.titlePlaceholder') +
-      '" class="tk-input" />' +
+      '" class="' + App.ui.inputClass() + '" />' +
       (draftError.title ? '<p class="tk-error">' + draftError.title + '</p>' : '') +
       '</div>' +
       '<div class="tk-field">' +
@@ -991,7 +991,7 @@
       t('tasks.drawer.status') +
       '</label>' +
       '<div class="relative" data-dropdown>' +
-      '<button type="button" data-dropdown-trigger class="tk-input tk-select-trigger">' +
+      '<button type="button" data-dropdown-trigger class="' + App.ui.inputClass('tk-select-trigger') + '">' +
       '<span class="' +
       (draft.status ? '' : 'tk-placeholder') +
       '">' +
@@ -1114,7 +1114,7 @@
           esc(bulkDeleteInput) +
           '" placeholder="' +
           t('tasks.bulkDeletePlaceholder') +
-          '" class="tk-input" />' +
+          '" class="' + App.ui.inputClass() + '" />' +
           '</label>' +
           '<div class="tk-alert">' +
           '<strong>' +
@@ -1150,7 +1150,7 @@
           '<label class="tk-label">' +
           t('tasks.importFile') +
           '</label>' +
-          '<input type="file" data-task-import-file accept=".csv,text/csv" class="tk-input tk-file" />' +
+          '<input type="file" data-task-import-file accept=".csv,text/csv" class="' + App.ui.inputClass('tk-file') + '" />' +
           '<p class="tk-file-hint">' +
           t('tasks.importHint') +
           '</p>' +

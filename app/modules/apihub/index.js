@@ -797,7 +797,7 @@
       '</div></div>' +
       (isDefault
         ? ''
-        : '<input type="password" class="hub-input" data-hub-apikey placeholder="' +
+        : '<input type="password" class="' + App.ui.inputClass() + '" data-hub-apikey placeholder="' +
           t('apihub.apiKeyPlaceholder') +
           '" value="' +
           escAttr(apiKeyOf(key)) +
@@ -855,14 +855,14 @@
       '<div class="hub-form">' +
       '<div class="hub-field"><label>' +
       t('apihub.routeName') +
-      '</label><input type="text" class="hub-input" data-hub-f-name placeholder="' +
+      '</label><input type="text" class="' + App.ui.inputClass() + '" data-hub-f-name placeholder="' +
       t('apihub.routeNamePlaceholder') +
       '" value="' +
       escAttr(c ? c.name : '') +
       '" /></div>' +
       '<div class="hub-field"><label>' +
       t('apihub.description') +
-      '</label><input type="text" class="hub-input" data-hub-f-desc placeholder="' +
+      '</label><input type="text" class="' + App.ui.inputClass() + '" data-hub-f-desc placeholder="' +
       t('apihub.routeDescPlaceholder') +
       '" value="' +
       escAttr(c ? c.desc : '') +
@@ -896,7 +896,7 @@
       '</div></div></div>' +
       '<div class="hub-field"><label>' +
       t('apihub.path') +
-      '</label><input type="text" class="hub-input" data-hub-f-path placeholder="/api/..." value="' +
+      '</label><input type="text" class="' + App.ui.inputClass() + '" data-hub-f-path placeholder="/api/..." value="' +
       escAttr(c ? c.path : '') +
       '" /></div>' +
       '<div class="hub-field"><label>' +
@@ -918,12 +918,12 @@
       '</div></div>' +
       '<div class="hub-field"><label>' +
       t('apihub.statusCode') +
-      '</label><input type="number" class="hub-input" data-hub-f-status min="100" max="599" value="' +
+      '</label><input type="number" class="' + App.ui.inputClass() + '" data-hub-f-status min="100" max="599" value="' +
       (c ? c.staticStatus || 200 : 200) +
       '" /></div>' +
       '<div class="hub-field"><label>' +
       t('apihub.response') +
-      '</label><textarea class="hub-input" data-hub-f-static placeholder="{ }">' +
+      '</label><textarea class="' + App.ui.inputClass('ui-input-mono') + '" data-hub-f-static placeholder="{ }">' +
       esc(c && c.staticBody ? JSON.stringify(c.staticBody, null, 2) : '') +
       '</textarea></div>' +
       '</div>';
@@ -1435,7 +1435,7 @@
       '<span class="hub-log-label">' +
       esc(t('apihub.maxLogs')) +
       '</span>' +
-      '<input type="number" class="hub-input hub-log-num" data-hub-logset="maxLogs" min="10" max="10000" step="10" value="' +
+      '<input type="number" class="' + App.ui.inputClass('hub-log-num') + '" data-hub-logset="maxLogs" min="10" max="10000" step="10" value="' +
       escAttr(lg.maxLogs || 500) +
       '" />' +
       '</div>' +
@@ -1443,7 +1443,7 @@
       '<span class="hub-log-label">' +
       esc(t('apihub.retentionDays')) +
       '</span>' +
-      '<input type="number" class="hub-input hub-log-num" data-hub-logset="retentionDays" min="1" max="365" step="1" value="' +
+      '<input type="number" class="' + App.ui.inputClass('hub-log-num') + '" data-hub-logset="retentionDays" min="1" max="365" step="1" value="' +
       escAttr(lg.retentionDays || 7) +
       '" />' +
       '</div>' +
@@ -1510,7 +1510,7 @@
         ? '<div class="hub-dd-label" style="padding-top:0.375rem">' +
           esc(t('apihub.defaultApiKey')) +
           '</div>' +
-          '<input type="password" class="hub-input" data-hub-default-apikey placeholder="' +
+          '<input type="password" class="' + App.ui.inputClass() + '" data-hub-default-apikey placeholder="' +
           escAttr(t('apihub.defaultApiKey')) +
           '" value="' +
           escAttr(state.secrets.defaultApiKey || '') +

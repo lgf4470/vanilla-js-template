@@ -170,7 +170,7 @@
       '<label class="sp-label">' +
       t('profile.username.label') +
       '</label>' +
-      '<input class="sp-input" type="text" data-setting="profile.username" value="' +
+      '<input class="' + App.ui.inputClass() + '" type="text" data-setting="profile.username" value="' +
       escAttr(p.username) +
       '" placeholder="' +
       t('profile.username.placeholder') +
@@ -183,7 +183,7 @@
       '<label class="sp-label">' +
       t('profile.email.label') +
       '</label>' +
-      '<input class="sp-input" type="email" data-setting="profile.email" value="' +
+      '<input class="' + App.ui.inputClass() + '" type="email" data-setting="profile.email" value="' +
       escAttr(p.email) +
       '" placeholder="' +
       t('profile.email.placeholder') +
@@ -198,7 +198,7 @@
       '<label class="sp-label">' +
       t('profile.bio.label') +
       '</label>' +
-      '<textarea class="sp-textarea" data-setting="profile.bio" placeholder="' +
+      '<textarea class="' + App.ui.inputClass() + '" data-setting="profile.bio" placeholder="' +
       t('profile.bio.placeholder') +
       '">' +
       escHtml(p.bio || '') +
@@ -218,10 +218,10 @@
       '<p class="sp-field-desc">' +
       t('profile.urls.description') +
       '</p>' +
-      '<input class="sp-input" type="url" data-setting="profile.links.0" value="' +
+      '<input class="' + App.ui.inputClass() + '" type="url" data-setting="profile.links.0" value="' +
       escAttr(links[0]) +
       '" />' +
-      '<input class="sp-input" type="url" data-setting="profile.links.1" value="' +
+      '<input class="' + App.ui.inputClass() + '" type="url" data-setting="profile.links.1" value="' +
       escAttr(links[1]) +
       '" />' +
       '<button type="button" class="' +
@@ -454,7 +454,7 @@
       '<label class="sp-label">' +
       t('account.name.label') +
       '</label>' +
-      '<input class="sp-input" type="text" data-setting="account.name" value="' +
+      '<input class="' + App.ui.inputClass() + '" type="text" data-setting="account.name" value="' +
       escAttr(ac.name) +
       '" placeholder="' +
       t('account.name.placeholder') +

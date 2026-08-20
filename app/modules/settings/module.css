@@ -178,37 +178,6 @@
 .sp-field-desc a:hover {
   text-decoration-style: solid;
 }
-.sp-input,
-.sp-textarea {
-  display: flex;
-  width: 100%;
-  height: 2.25rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--input);
-  background: var(--background);
-  padding: 0 0.75rem;
-  font-size: 0.875rem;
-  font-family: inherit;
-  color: var(--foreground);
-  box-sizing: border-box;
-}
-.sp-textarea {
-  height: auto;
-  min-height: 5rem;
-  padding: 0.5rem 0.75rem;
-  resize: none;
-}
-.sp-input:focus-visible,
-.sp-textarea:focus-visible {
-  outline: none;
-  border-color: var(--ring);
-  box-shadow: 0 0 0 2px color-mix(in oklab, var(--ring) 40%, transparent);
-}
-.sp-input::placeholder,
-.sp-textarea::placeholder {
-  color: var(--muted-foreground);
-}
-
 /* ---------- 自定义下拉(替代原生 select,样式类 shadcn Select) ---------- */
 .sp-select-trigger {
   display: flex;
